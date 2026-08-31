@@ -34,3 +34,34 @@ limits:
     max_images_per_post: 9
     # 作品文件单个最大字节（默认 100MB）
     max_work_file_size: 104857600
+
+# 速率限制配置（单位：毫秒 / 次数）
+rate_limit:
+    # 注册：15 分钟内最多 5 次
+    strict:
+        window_ms: 900000
+        max: 5
+    # 登录：15 分钟内最多 10 次
+    login:
+        window_ms: 900000
+        max: 10
+    # 写入操作（发帖/编辑/草稿）：1 分钟内最多 10 次
+    write:
+        window_ms: 60000
+        max: 10
+    # 互动操作（点赞/收藏/打赏）：1 分钟内最多 30 次
+    interact:
+        window_ms: 60000
+        max: 30
+    # 关注/隐私设置：1 分钟内最多 20 次
+    follow:
+        window_ms: 60000
+        max: 20
+    # 读取操作：1 分钟内最多 120 次
+    read:
+        window_ms: 60000
+        max: 120
+    # OAuth 相关：1 分钟内最多 60 次
+    oauth:
+        window_ms: 60000
+        max: 60

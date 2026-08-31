@@ -1,6 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { rateLimit } from "./rate-limit";
 import { getStorage } from "./storage";
 import { registerRoutes } from "./utils";
 import { routes as homeRoutes } from "./routes/home";
@@ -35,6 +36,8 @@ app.use(
         maxAge: 86400,
     }),
 );
+
+app.use(rateLimit);
 
 app.notFound(() => new Response("Not Found", { status: 404 }));
 
