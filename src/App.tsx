@@ -9,7 +9,7 @@ function App() {
 
     if (checking) {
         return (
-            <div className="flex min-h-svh items-center justify-center bg-muted/40 p-4">
+            <div className="flex min-h-svh items-center justify-center p-4">
                 <Loader2 className="size-6 animate-spin text-muted-foreground" />
             </div>
         );
@@ -20,7 +20,7 @@ function App() {
     }
 
     return (
-        <div className="flex min-h-svh items-center justify-center bg-muted/40 p-4">
+        <div className="flex min-h-svh items-center justify-center p-4">
             <HomePage />
         </div>
     );

@@ -198,13 +198,7 @@ function RegisterForm({
                         disabled={submitting}
                     />
                     {file && (
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={handleRemove}
-                            aria-label="移除头像"
-                        >
+                        <Button type="button" variant="ghost" size="icon" onClick={handleRemove} aria-label="移除头像">
                             <X />
                         </Button>
                     )}
@@ -281,7 +275,7 @@ export default function Login() {
     }, []);
 
     return (
-        <div className="flex min-h-svh items-center justify-center bg-muted/40 p-4">
+        <div className="flex min-h-svh items-center justify-center p-4">
             <Card className="w-full max-w-sm">
                 <CardHeader className="text-center">
                     <CardTitle className="text-xl">chenify</CardTitle>

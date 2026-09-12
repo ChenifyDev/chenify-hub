@@ -155,6 +155,54 @@
     html {
         @apply font-sans;
     }
+    body.app-bg-active::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background: color-mix(in srgb, var(--background) 50%, transparent);
+    }
+    body.app-bg-blur::before {
+        backdrop-filter: blur(4px) saturate(1);
+    }
+    @supports not (backdrop-filter: blur(1px)) {
+        body.app-bg-blur::before {
+            background: color-mix(in srgb, var(--background) 70%, transparent);
+        }
+    }
+}
+
+body.app-bg-active [data-sidebar="sidebar"] {
+    background: color-mix(in srgb, var(--sidebar) 60%, transparent) !important;
+    backdrop-filter: blur(12px) saturate(1.15);
+}
+body.app-bg-active [data-slot="card"] {
+    background: color-mix(in srgb, var(--card) 70%, transparent) !important;
+    backdrop-filter: blur(8px) saturate(1.1);
+}
+body.app-bg-active [data-slot="dialog-content"],
+body.app-bg-active [data-slot="sheet-content"],
+body.app-bg-active [data-slot="dropdown-menu-content"],
+body.app-bg-active [data-slot="dropdown-menu-sub-content"],
+body.app-bg-active [data-slot="tabs-list"] {
+    background: color-mix(in srgb, var(--popover) 70%, transparent) !important;
+    backdrop-filter: blur(8px) saturate(1.1);
+}
+@supports not (backdrop-filter: blur(1px)) {
+    body.app-bg-active [data-sidebar="sidebar"] {
+        background: color-mix(in srgb, var(--sidebar) 85%, transparent) !important;
+    }
+    body.app-bg-active [data-slot="card"] {
+        background: color-mix(in srgb, var(--card) 88%, transparent) !important;
+    }
+    body.app-bg-active [data-slot="dialog-content"],
+    body.app-bg-active [data-slot="sheet-content"],
+    body.app-bg-active [data-slot="dropdown-menu-content"],
+    body.app-bg-active [data-slot="dropdown-menu-sub-content"],
+    body.app-bg-active [data-slot="tabs-list"] {
+        background: color-mix(in srgb, var(--popover) 88%, transparent) !important;
+    }
 }
 
 @layer components {

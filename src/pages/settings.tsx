@@ -5,11 +5,13 @@ import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Checkbox } from "@/components/ui/checkbox.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import { updateProfile } from "@/lib/api";
 import { useUserStore } from "@/stores/useUser.ts";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload.ts";
+import { useBackgroundImage } from "@/hooks/useBackgroundImage.ts";
 import { type FormStatus, StatusMessage } from "@/components/StatusMessage.tsx";
 
 export default function SettingsPage() {
@@ -36,6 +38,16 @@ export default function SettingsPage() {
         handleRemove();
         setRemoveAvatar(true);
     };
+
+    const {
+        url: bgUrl,
+        blur: bgBlur,
+        setBlur: setBgBlur,
+        setBackground: setBg,
+        removeBackground: removeBg,
+    } = useBackgroundImage({
+        onError: (message) => setStatus({ type: "error", text: message }),
+    });
 
     if (checking) {
         return (
@@ -78,6 +90,20 @@ export default function SettingsPage() {
         }
     };
 
+    const handleBgChange = (event: ChangeEvent<HTMLInputElement>) => {
+        setStatus(null);
+        const file = event.target.files?.[0] ?? null;
+        if (file) {
+            setBg(file);
+        } else {
+            setBg(null);
+        }
+    };
+
+    const handleBgRemove = () => {
+        removeBg();
+    };
+
     // 三种展示状态：新选文件预览 > 当前头像 > 移除后的空占位
     const showCurrent = !!user.avatar && !preview && !removeAvatar;
 
@@ -88,7 +114,7 @@ export default function SettingsPage() {
                     <Settings className="size-5" />
                     设置
                 </h1>
-                <p className="mt-1 text-sm text-muted-foreground">修改你的用户名和头像</p>
+                <p className="mt-1 text-sm text-muted-foreground">修改你的用户名、头像和背景图片</p>
             </header>
 
             <Card>
@@ -142,6 +168,57 @@ export default function SettingsPage() {
                                     </Button>
                                 )}
                             </div>
+                        </div>
+
+                        <div className="grid gap-1.5">
+                            <Label htmlFor="settings-background">背景图片</Label>
+                            <div className="flex items-center gap-3">
+                                <div className="relative size-16">
+                                    {bgUrl ? (
+                                        <img
+                                            src={bgUrl}
+                                            alt="背景预览"
+                                            className="object-cover w-full h-full rounded-lg"
+                                        />
+                                    ) : (
+                                        <Avatar className="size-16">
+                                            <AvatarFallback className="text-xl text-muted-foreground">
+                                                <ImagePlus className="size-6" />
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    )}
+                                </div>
+                                <Input
+                                    id="settings-background"
+                                    type="file"
+                                    accept="image/png,image/jpeg,image/webp,image/gif"
+                                    className="flex-1 file:h-full file:cursor-pointer"
+                                    onChange={handleBgChange}
+                                    disabled={submitting}
+                                />
+                                {bgUrl && (
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={handleBgRemove}
+                                        aria-label="移除背景图片"
+                                        disabled={submitting}
+                                    >
+                                        <X />
+                                    </Button>
+                                )}
+                            </div>
+                            {bgUrl && (
+                                <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+                                    <Checkbox
+                                        checked={bgBlur}
+                                        onCheckedChange={(checked) => setBgBlur(checked === true)}
+                                        disabled={submitting}
+                                    />
+                                    背景毛玻璃效果
+                                </label>
+                            )}
                         </div>
 
                         <div className="grid gap-1.5">
