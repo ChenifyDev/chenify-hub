@@ -3,10 +3,12 @@ import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import { Markdown } from "@tiptap/markdown";
 import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
+import { HighPriorityImage } from "@/lib/high-priority-image.ts";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import { lowlight } from "lowlight";
 
 import { MathExtensions } from "@/lib/tiptap-math.ts";
+import { PasteMarkdown } from "@/lib/paste-markdown.ts";
 import {
     Bold,
     Code,
@@ -39,12 +41,14 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 const extensions = [
     ...MathExtensions,
+    HighPriorityImage.configure({
+        allowBase64: true,
+    }),
     StarterKit.configure({
         heading: { levels: [1, 2, 3] },
         link: {
             openOnClick: false,
-            autolink: true,
-            validate: (url) => /^https?:\/\//.test(url),
+            autolink: false,
         },
         codeBlock: false,
     }),
@@ -53,8 +57,10 @@ const extensions = [
     Markdown.configure({
         markedOptions: {
             breaks: true,
+            gfm: true,
         },
     }),
+    PasteMarkdown,
 ];
 
 function ToolButton({
