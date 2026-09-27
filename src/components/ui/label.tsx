@@ -1,8 +1,9 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { withPluginUI } from "@/plugins/api.tsx";
 
-function Label({ className, ...props }: React.ComponentProps<"label">) {
+const Label = withPluginUI("label", function Label({ className, ...props }: React.ComponentProps<"label">) {
     return (
         <label
             data-slot="label"
@@ -13,6 +14,6 @@ function Label({ className, ...props }: React.ComponentProps<"label">) {
             {...props}
         />
     );
-}
+});
 
 export { Label };

@@ -1,0 +1,16 @@
+{
+    "id": "cozy-purple",
+    "name": "Cozy Purple",
+    "version": "1.0.0",
+    "author": "ChenifyHub",
+    "description": "示例插件：把主色调换成柔和的紫色，圆角更大，整体更圆润。",
+    "ui": {
+        "style": ["ui/styles.css"],
+        "components": {
+            "button": "ui/button.tsx",
+            "card": "ui/card.tsx",
+            "badge": "ui/badge.tsx",
+            "input": "ui/input.tsx"
+        }
+    }
+}

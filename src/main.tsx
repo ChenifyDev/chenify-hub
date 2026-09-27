@@ -6,13 +6,16 @@ import router from "@/router";
 import AuthBootstrap from "@/components/AuthBootstrap.tsx";
 import { ThemeProvider } from "@/components/layout/ThemeProvider.tsx";
 import { Toaster } from "@/components/ui/sonner.tsx";
+import PluginRuntime from "@/plugins/runtime.tsx";
 
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
         <AuthBootstrap>
             <ThemeProvider defaultTheme={"system"} storageKey={"app-theme"}>
-                <Toaster position={"top-center"} />
-                <RouterProvider router={router} />
+                <PluginRuntime>
+                    <Toaster position={"top-center"} />
+                    <RouterProvider router={router} />
+                </PluginRuntime>
             </ThemeProvider>
         </AuthBootstrap>
     </StrictMode>,

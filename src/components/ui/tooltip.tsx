@@ -1,22 +1,23 @@
-"use client";
+﻿"use client";
 
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
 
 import { cn } from "@/lib/utils";
+import { withPluginUI } from "@/plugins/api.tsx";
 
-function TooltipProvider({ delay = 0, ...props }: TooltipPrimitive.Provider.Props) {
+function TooltipProviderImpl({ delay = 0, ...props }: TooltipPrimitive.Provider.Props) {
     return <TooltipPrimitive.Provider data-slot="tooltip-provider" delay={delay} {...props} />;
 }
 
-function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
+function TooltipImpl({ ...props }: TooltipPrimitive.Root.Props) {
     return <TooltipPrimitive.Root data-slot="tooltip" {...props} />;
 }
 
-function TooltipTrigger({ ...props }: TooltipPrimitive.Trigger.Props) {
+function TooltipTriggerImpl({ ...props }: TooltipPrimitive.Trigger.Props) {
     return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
 }
 
-function TooltipContent({
+function TooltipContentImpl({
     className,
     side = "top",
     sideOffset = 4,
@@ -50,5 +51,10 @@ function TooltipContent({
         </TooltipPrimitive.Portal>
     );
 }
+
+const Tooltip = withPluginUI("tooltip", TooltipImpl);
+const TooltipTrigger = withPluginUI("tooltipTrigger", TooltipTriggerImpl);
+const TooltipContent = withPluginUI("tooltipContent", TooltipContentImpl);
+const TooltipProvider = withPluginUI("tooltipProvider", TooltipProviderImpl);
 
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };

@@ -1,11 +1,12 @@
-"use client";
+﻿"use client";
 
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
+import { withPluginUI } from "@/plugins/api.tsx";
 
-function Tabs({ className, orientation = "horizontal", ...props }: TabsPrimitive.Root.Props) {
+function TabsImpl({ className, orientation = "horizontal", ...props }: TabsPrimitive.Root.Props) {
     return (
         <TabsPrimitive.Root
             data-slot="tabs"
@@ -31,7 +32,7 @@ const tabsListVariants = cva(
     },
 );
 
-function TabsList({
+function TabsListImpl({
     className,
     variant = "default",
     ...props
@@ -46,7 +47,7 @@ function TabsList({
     );
 }
 
-function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
+function TabsTriggerImpl({ className, ...props }: TabsPrimitive.Tab.Props) {
     return (
         <TabsPrimitive.Tab
             data-slot="tabs-trigger"
@@ -62,7 +63,7 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
     );
 }
 
-function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
+function TabsContentImpl({ className, ...props }: TabsPrimitive.Panel.Props) {
     return (
         <TabsPrimitive.Panel
             data-slot="tabs-content"
@@ -71,5 +72,10 @@ function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
         />
     );
 }
+
+const Tabs = withPluginUI("tabs", TabsImpl);
+const TabsList = withPluginUI("tabsList", TabsListImpl);
+const TabsTrigger = withPluginUI("tabsTrigger", TabsTriggerImpl);
+const TabsContent = withPluginUI("tabsContent", TabsContentImpl);
 
 export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants };

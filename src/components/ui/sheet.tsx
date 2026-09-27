@@ -1,19 +1,20 @@
-import * as React from "react";
+﻿import * as React from "react";
 import { Dialog as SheetPrimitive } from "@base-ui/react/dialog";
 
 import { cn } from "@/lib/utils";
+import { withPluginUI } from "@/plugins/api.tsx";
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
 
-function Sheet({ ...props }: SheetPrimitive.Root.Props) {
+function SheetImpl({ ...props }: SheetPrimitive.Root.Props) {
     return <SheetPrimitive.Root data-slot="sheet" {...props} />;
 }
 
-function SheetTrigger({ ...props }: SheetPrimitive.Trigger.Props) {
+function SheetTriggerImpl({ ...props }: SheetPrimitive.Trigger.Props) {
     return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
 }
 
-function SheetClose({ ...props }: SheetPrimitive.Close.Props) {
+function SheetCloseImpl({ ...props }: SheetPrimitive.Close.Props) {
     return <SheetPrimitive.Close data-slot="sheet-close" {...props} />;
 }
 
@@ -34,7 +35,7 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
     );
 }
 
-function SheetContent({
+function SheetContentImpl({
     className,
     children,
     side = "right",
@@ -71,15 +72,15 @@ function SheetContent({
     );
 }
 
-function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
+function SheetHeaderImpl({ className, ...props }: React.ComponentProps<"div">) {
     return <div data-slot="sheet-header" className={cn("flex flex-col gap-0.5 p-4", className)} {...props} />;
 }
 
-function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
+function SheetFooterImpl({ className, ...props }: React.ComponentProps<"div">) {
     return <div data-slot="sheet-footer" className={cn("mt-auto flex flex-col gap-2 p-4", className)} {...props} />;
 }
 
-function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
+function SheetTitleImpl({ className, ...props }: SheetPrimitive.Title.Props) {
     return (
         <SheetPrimitive.Title
             data-slot="sheet-title"
@@ -89,7 +90,7 @@ function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
     );
 }
 
-function SheetDescription({ className, ...props }: SheetPrimitive.Description.Props) {
+function SheetDescriptionImpl({ className, ...props }: SheetPrimitive.Description.Props) {
     return (
         <SheetPrimitive.Description
             data-slot="sheet-description"
@@ -99,4 +100,24 @@ function SheetDescription({ className, ...props }: SheetPrimitive.Description.Pr
     );
 }
 
-export { Sheet, SheetTrigger, SheetClose, SheetContent, SheetHeader, SheetFooter, SheetTitle, SheetDescription };
+const Sheet = withPluginUI("sheet", SheetImpl);
+const SheetTrigger = withPluginUI("sheetTrigger", SheetTriggerImpl);
+const SheetClose = withPluginUI("sheetClose", SheetCloseImpl);
+const SheetContent = withPluginUI("sheetContent", SheetContentImpl);
+const SheetHeader = withPluginUI("sheetHeader", SheetHeaderImpl);
+const SheetFooter = withPluginUI("sheetFooter", SheetFooterImpl);
+const SheetTitle = withPluginUI("sheetTitle", SheetTitleImpl);
+const SheetDescription = withPluginUI("sheetDescription", SheetDescriptionImpl);
+
+export {
+    Sheet,
+    SheetTrigger,
+    SheetClose,
+    SheetContent,
+    SheetHeader,
+    SheetFooter,
+    SheetTitle,
+    SheetDescription,
+    SheetPortal,
+    SheetOverlay,
+};

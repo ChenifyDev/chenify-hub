@@ -1,22 +1,23 @@
-import * as React from "react";
+﻿import * as React from "react";
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 
 import { cn } from "@/lib/utils";
+import { withPluginUI } from "@/plugins/api.tsx";
 import { ChevronRightIcon, CheckIcon } from "lucide-react";
 
-function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
+function DropdownMenuImpl({ ...props }: MenuPrimitive.Root.Props) {
     return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />;
 }
 
-function DropdownMenuPortal({ ...props }: MenuPrimitive.Portal.Props) {
+function DropdownMenuPortalImpl({ ...props }: MenuPrimitive.Portal.Props) {
     return <MenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />;
 }
 
-function DropdownMenuTrigger({ ...props }: MenuPrimitive.Trigger.Props) {
+function DropdownMenuTriggerImpl({ ...props }: MenuPrimitive.Trigger.Props) {
     return <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />;
 }
 
-function DropdownMenuContent({
+function DropdownMenuContentImpl({
     align = "start",
     alignOffset = 0,
     side = "bottom",
@@ -46,11 +47,11 @@ function DropdownMenuContent({
     );
 }
 
-function DropdownMenuGroup({ ...props }: MenuPrimitive.Group.Props) {
+function DropdownMenuGroupImpl({ ...props }: MenuPrimitive.Group.Props) {
     return <MenuPrimitive.Group data-slot="dropdown-menu-group" {...props} />;
 }
 
-function DropdownMenuLabel({
+function DropdownMenuLabelImpl({
     className,
     inset,
     ...props
@@ -67,7 +68,7 @@ function DropdownMenuLabel({
     );
 }
 
-function DropdownMenuItem({
+function DropdownMenuItemImpl({
     className,
     inset,
     variant = "default",
@@ -90,11 +91,11 @@ function DropdownMenuItem({
     );
 }
 
-function DropdownMenuSub({ ...props }: MenuPrimitive.SubmenuRoot.Props) {
+function DropdownMenuSubImpl({ ...props }: MenuPrimitive.SubmenuRoot.Props) {
     return <MenuPrimitive.SubmenuRoot data-slot="dropdown-menu-sub" {...props} />;
 }
 
-function DropdownMenuSubTrigger({
+function DropdownMenuSubTriggerImpl({
     className,
     inset,
     children,
@@ -118,14 +119,14 @@ function DropdownMenuSubTrigger({
     );
 }
 
-function DropdownMenuSubContent({
+function DropdownMenuSubContentImpl({
     align = "start",
     alignOffset = -3,
     side = "right",
     sideOffset = 0,
     className,
     ...props
-}: React.ComponentProps<typeof DropdownMenuContent>) {
+}: React.ComponentProps<typeof DropdownMenuContentImpl>) {
     return (
         <DropdownMenuContent
             data-slot="dropdown-menu-sub-content"
@@ -142,7 +143,7 @@ function DropdownMenuSubContent({
     );
 }
 
-function DropdownMenuCheckboxItem({
+function DropdownMenuCheckboxItemImpl({
     className,
     children,
     checked,
@@ -175,11 +176,11 @@ function DropdownMenuCheckboxItem({
     );
 }
 
-function DropdownMenuRadioGroup({ ...props }: MenuPrimitive.RadioGroup.Props) {
+function DropdownMenuRadioGroupImpl({ ...props }: MenuPrimitive.RadioGroup.Props) {
     return <MenuPrimitive.RadioGroup data-slot="dropdown-menu-radio-group" {...props} />;
 }
 
-function DropdownMenuRadioItem({
+function DropdownMenuRadioItemImpl({
     className,
     children,
     inset,
@@ -210,7 +211,7 @@ function DropdownMenuRadioItem({
     );
 }
 
-function DropdownMenuSeparator({ className, ...props }: MenuPrimitive.Separator.Props) {
+function DropdownMenuSeparatorImpl({ className, ...props }: MenuPrimitive.Separator.Props) {
     return (
         <MenuPrimitive.Separator
             data-slot="dropdown-menu-separator"
@@ -220,7 +221,7 @@ function DropdownMenuSeparator({ className, ...props }: MenuPrimitive.Separator.
     );
 }
 
-function DropdownMenuShortcut({ className, ...props }: React.ComponentProps<"span">) {
+function DropdownMenuShortcutImpl({ className, ...props }: React.ComponentProps<"span">) {
     return (
         <span
             data-slot="dropdown-menu-shortcut"
@@ -232,6 +233,22 @@ function DropdownMenuShortcut({ className, ...props }: React.ComponentProps<"spa
         />
     );
 }
+
+const DropdownMenu = withPluginUI("dropdownMenu", DropdownMenuImpl);
+const DropdownMenuPortal = withPluginUI("dropdownMenuPortal", DropdownMenuPortalImpl);
+const DropdownMenuTrigger = withPluginUI("dropdownMenuTrigger", DropdownMenuTriggerImpl);
+const DropdownMenuContent = withPluginUI("dropdownMenuContent", DropdownMenuContentImpl);
+const DropdownMenuGroup = withPluginUI("dropdownMenuGroup", DropdownMenuGroupImpl);
+const DropdownMenuLabel = withPluginUI("dropdownMenuLabel", DropdownMenuLabelImpl);
+const DropdownMenuItem = withPluginUI("dropdownMenuItem", DropdownMenuItemImpl);
+const DropdownMenuCheckboxItem = withPluginUI("dropdownMenuCheckboxItem", DropdownMenuCheckboxItemImpl);
+const DropdownMenuRadioGroup = withPluginUI("dropdownMenuRadioGroup", DropdownMenuRadioGroupImpl);
+const DropdownMenuRadioItem = withPluginUI("dropdownMenuRadioItem", DropdownMenuRadioItemImpl);
+const DropdownMenuSeparator = withPluginUI("dropdownMenuSeparator", DropdownMenuSeparatorImpl);
+const DropdownMenuShortcut = withPluginUI("dropdownMenuShortcut", DropdownMenuShortcutImpl);
+const DropdownMenuSub = withPluginUI("dropdownMenuSub", DropdownMenuSubImpl);
+const DropdownMenuSubTrigger = withPluginUI("dropdownMenuSubTrigger", DropdownMenuSubTriggerImpl);
+const DropdownMenuSubContent = withPluginUI("dropdownMenuSubContent", DropdownMenuSubContentImpl);
 
 export {
     DropdownMenu,

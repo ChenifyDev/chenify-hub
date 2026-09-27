@@ -1,8 +1,9 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { withPluginUI } from "@/plugins/api.tsx";
 
-function Card({ className, size = "default", ...props }: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+function CardImpl({ className, size = "default", ...props }: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
     return (
         <div
             data-slot="card"
@@ -16,7 +17,7 @@ function Card({ className, size = "default", ...props }: React.ComponentProps<"d
     );
 }
 
-function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
+function CardHeaderImpl({ className, ...props }: React.ComponentProps<"div">) {
     return (
         <div
             data-slot="card-header"
@@ -29,7 +30,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
     );
 }
 
-function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
+function CardTitleImpl({ className, ...props }: React.ComponentProps<"div">) {
     return (
         <div
             data-slot="card-title"
@@ -42,11 +43,11 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
     );
 }
 
-function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
+function CardDescriptionImpl({ className, ...props }: React.ComponentProps<"div">) {
     return <div data-slot="card-description" className={cn("text-sm text-muted-foreground", className)} {...props} />;
 }
 
-function CardAction({ className, ...props }: React.ComponentProps<"div">) {
+function CardActionImpl({ className, ...props }: React.ComponentProps<"div">) {
     return (
         <div
             data-slot="card-action"
@@ -56,11 +57,11 @@ function CardAction({ className, ...props }: React.ComponentProps<"div">) {
     );
 }
 
-function CardContent({ className, ...props }: React.ComponentProps<"div">) {
+function CardContentImpl({ className, ...props }: React.ComponentProps<"div">) {
     return <div data-slot="card-content" className={cn("px-(--card-spacing)", className)} {...props} />;
 }
 
-function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
+function CardFooterImpl({ className, ...props }: React.ComponentProps<"div">) {
     return (
         <div
             data-slot="card-footer"
@@ -69,5 +70,13 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
         />
     );
 }
+
+const Card = withPluginUI("card", CardImpl);
+const CardHeader = withPluginUI("cardHeader", CardHeaderImpl);
+const CardTitle = withPluginUI("cardTitle", CardTitleImpl);
+const CardDescription = withPluginUI("cardDescription", CardDescriptionImpl);
+const CardAction = withPluginUI("cardAction", CardActionImpl);
+const CardContent = withPluginUI("cardContent", CardContentImpl);
+const CardFooter = withPluginUI("cardFooter", CardFooterImpl);
 
 export { Card, CardHeader, CardFooter, CardTitle, CardAction, CardDescription, CardContent };

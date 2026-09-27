@@ -9,6 +9,7 @@ import {
     Home,
     LogOut,
     Podium,
+    Puzzle,
     Settings,
     Signpost,
     SquarePen,
@@ -165,6 +166,16 @@ export default function AppSidebar() {
                                 <SidebarMenuButton isActive={isActive} tooltip="排行榜">
                                     <Podium />
                                     <span>排行榜</span>
+                                </SidebarMenuButton>
+                            )}
+                        </NavLink>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                        <NavLink to="/plugins">
+                            {({ isActive }) => (
+                                <SidebarMenuButton isActive={isActive} tooltip="插件">
+                                    <Puzzle />
+                                    <span>插件</span>
                                 </SidebarMenuButton>
                             )}
                         </NavLink>

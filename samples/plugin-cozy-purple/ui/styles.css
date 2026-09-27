@@ -1,0 +1,38 @@
+/*
+ * 全局样式。plugin.json 的 ui.style 里声明的文件会被原样注入 <head>，
+ * 插件停用或卸载时自动移除。
+ *
+ * 这里覆盖宿主的 design token，站点所有用到 var(--primary) 的地方都会跟着变，
+ * 比逐个组件写 class 省事得多。
+ */
+
+:root {
+    --primary: oklch(0.55 0.22 295);
+    --primary-foreground: oklch(0.98 0.01 295);
+    --ring: oklch(0.55 0.22 295);
+    --radius: 0.85rem;
+}
+
+.dark {
+    --primary: oklch(0.68 0.19 295);
+    --primary-foreground: oklch(0.16 0.03 295);
+    --ring: oklch(0.68 0.19 295);
+}
+
+/* 柔和一点的阴影，圆角变大后阴影太硬会显得脏 */
+[data-slot="card"] {
+    box-shadow:
+        0 1px 2px oklch(0.3 0.05 295 / 0.06),
+        0 8px 24px oklch(0.3 0.05 295 / 0.08);
+}
+
+[data-slot="button"] {
+    transition:
+        transform 150ms ease,
+        box-shadow 150ms ease,
+        background-color 150ms ease;
+}
+
+[data-slot="button"]:active:not([aria-expanded]) {
+    transform: scale(0.97);
+}

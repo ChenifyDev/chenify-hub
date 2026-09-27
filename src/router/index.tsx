@@ -14,6 +14,7 @@ import SettingsPage from "@/pages/settings.tsx";
 import NotificationsPage from "@/pages/notifications.tsx";
 import RankPage from "@/pages/rank.tsx";
 import CheckinPage from "@/pages/checkin.tsx";
+import PluginsPage from "@/pages/plugins.tsx";
 const router = createBrowserRouter([
     {
         path: "/",
@@ -66,6 +67,11 @@ const router = createBrowserRouter([
             {
                 path: "checkin",
                 element: <CheckinPage />,
+            },
+            {
+                // 插件只作用于本地浏览器，所以不需要登录
+                path: "plugins",
+                element: <PluginsPage />,
             },
         ],
     },
