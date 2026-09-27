@@ -74,7 +74,7 @@ function listSourceFiles(dir: string): string[] {
  */
 function readAppLucideIcons(root: string): string[] {
     const icons = new Set<string>();
-    const pattern = /import\s*\{([^}]*)\}\s*from\s*["']lucide-react["']/g;
+    const pattern = /import\s*\{([^}]*)}\s*from\s*["']lucide-react["']/g;
     for (const file of listSourceFiles(path.resolve(root, "src"))) {
         const code = fs.readFileSync(file, "utf8");
         for (const match of code.matchAll(pattern)) {

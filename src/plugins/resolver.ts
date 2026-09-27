@@ -175,7 +175,9 @@ const MIME_BY_EXT: Record<string, string> = {
 
 function mimeOf(path: string): string {
     const dot = path.lastIndexOf(".");
-    return dot < 0 ? "application/octet-stream" : (MIME_BY_EXT[path.slice(dot).toLowerCase()] ?? "application/octet-stream");
+    return dot < 0
+        ? "application/octet-stream"
+        : (MIME_BY_EXT[path.slice(dot).toLowerCase()] ?? "application/octet-stream");
 }
 
 /** 单个插件的求值上下文。 */
@@ -258,7 +260,6 @@ export async function prewarmModules(graph: PluginGraph): Promise<void> {
             if (!loader) throw new PluginResolveError(`未知的 Base UI 模块：${specifier}`);
             tasks.push(loader().then((mod) => void graph.baseUi.set(specifier, mod)));
         } else if (graph.lucideFull) {
-            continue;
         } else {
             tasks.push(
                 loadLucideIcons().then((mod) => {
@@ -353,7 +354,9 @@ function loadModule(graph: PluginGraph, path: string, sdk: PluginSdk): Record<st
         factory(createRequire(graph, path, sdk), module, module.exports, path);
     } catch (err) {
         graph.modules.delete(path);
-        throw err instanceof PluginResolveError ? err : new PluginResolveError(`${path} 执行失败：${err instanceof Error ? err.message : String(err)}`);
+        throw err instanceof PluginResolveError
+            ? err
+            : new PluginResolveError(`${path} 执行失败：${err instanceof Error ? err.message : String(err)}`);
     }
 
     graph.modules.set(path, module.exports);
