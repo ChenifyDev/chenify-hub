@@ -15,11 +15,9 @@ function looksLikeMarkdown(text: string): boolean {
     if (/\*\*[^*]+\*\*/.test(text)) return true;
     if (/(?<!\*)\*(?!\*)[^*]+\*(?!\*)/.test(text)) return true;
     if (/~~[^~]+~~/.test(text)) return true;
-    if (/\[.+\]\(.+\)/.test(text)) return true;
-    if (/!\[.*\]\(.+\)/.test(text)) return true;
-    if (/\$[^$]+\$/.test(text)) return true;
-
-    return false;
+    if (/\[.+]\(.+\)/.test(text)) return true;
+    if (/!\[.*]\(.+\)/.test(text)) return true;
+    return /\$[^$]+\$/.test(text);
 }
 
 export const PasteMarkdown = Extension.create({
@@ -31,7 +29,7 @@ export const PasteMarkdown = Extension.create({
             new Plugin({
                 key: new PluginKey("pasteMarkdown"),
                 props: {
-                    handlePaste(view, event) {
+                    handlePaste(_, event) {
                         const text = event.clipboardData?.getData("text/plain");
                         const html = event.clipboardData?.getData("text/html");
 
@@ -47,6 +45,10 @@ export const PasteMarkdown = Extension.create({
                             return false;
                         }
 
+                        if (!editor.markdown) {
+                            console.warn("Markdown extension is not available.");
+                            return false;
+                        }
                         const json = editor.markdown.parse(text);
                         editor.commands.insertContent(json);
                         return true;
