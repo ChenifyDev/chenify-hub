@@ -1,4 +1,12 @@
-import { PLUGIN_SLOTS, type PluginFile, type PluginManifest, isPluginSlot, isScriptPath, isTextPath } from "./types.ts";
+import {
+    PLUGIN_SLOTS,
+    type PluginFile,
+    type PluginManifest,
+    type PluginSlot,
+    isPluginSlot,
+    isScriptPath,
+    isTextPath,
+} from "./types.ts";
 
 export const MANIFEST_NAME = "plugin.json";
 export const UI_DIR = "ui";
@@ -138,7 +146,8 @@ export function parseManifest(raw: unknown, files: Map<string, PluginFile>): Plu
         if (file.kind !== "text") throw new PluginError(`样式文件必须是文本：${path}`);
     }
 
-    const components: Record<string, string> = {};
+    // 键被 isPluginSlot 收窄成 PluginSlot，赋值处因此不会再退回到 string
+    const components: Partial<Record<PluginSlot, string>> = {};
     for (const [slot, ref] of Object.entries(asRecord(ui.components ?? {}, "ui.components"))) {
         if (!isPluginSlot(slot)) {
             throw new PluginError(`未知的组件插槽 "${slot}"。可用插槽：${PLUGIN_SLOTS.join(", ")}`);

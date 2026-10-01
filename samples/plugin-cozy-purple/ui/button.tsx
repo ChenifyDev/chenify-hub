@@ -1,4 +1,4 @@
-import { useHostUI } from "@/plugins/api";
+import { useHostUI, type SlotProps } from "@/plugins/api";
 import { cn } from "@/lib/utils";
 
 /**
@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
  * useHostUI("button") 拿到的是宿主默认实现（不含插件替换），
  * 从 "@/components/ui/button" import 拿到的则是已经被替换过的版本，直接再赋回同一插槽会无限递归。
  */
-export default function Button(props) {
+export default function Button(props: SlotProps<"button">) {
     const Host = useHostUI("button");
     if (!Host) return null;
 

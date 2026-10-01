@@ -1,0 +1,573 @@
+/**
+ * Terminal —— 黑白单色终端风
+ *
+ * 分四层：
+ *   1. 调色板   —— 用 html:root 一次性覆盖宿主的全部设计令牌（亮/暗两套主题同值）
+ *   2. 全局外观 —— 等宽字体、CRT 扫描线与暗角、光晕、滚动条、选区
+ *   3. 装饰类   —— Mark / Tag / TitleBar / term-input 这些由 TSX 注入的节点
+ *   4. 逐插槽   —— 55 个 [data-slot="..."]
+ *
+ * 优先级说明：本文件不带 @layer，而 Tailwind 的工具类都在 @layer utilities 里。
+ * 未分层样式永远赢过分层样式（与特异性无关），所以这里可以直接覆盖宿主写死的
+ * 类名，不需要 !important。唯二需要更高特异性的是第 1 节 —— 宿主的
+ * :root / .dark 令牌同样是未分层的，必须靠 html:root（0,1,1 > 0,1,0）压过去，
+ * 而不能依赖注入顺序。
+ */
+
+/* ═══════════════ 1. 调色板 ═══════════════
+ * 亮色与暗色取同一组值：插件生效时界面恒为黑底白字的终端，
+ * 设置里的深浅色切换不会让终端色跑偏。
+ */
+html:root {
+    /* 界面 */
+    --background: #0a0a0a;
+    --foreground: #e6e6e6;
+    --card: #101010;
+    --card-foreground: #e6e6e6;
+    --popover: #101010;
+    --popover-foreground: #e6e6e6;
+    --primary: #ffffff;
+    --primary-foreground: #0a0a0a;
+    --secondary: #161616;
+    --secondary-foreground: #e6e6e6;
+    --muted: #141414;
+    --muted-foreground: #8a8a8a;
+    --accent: #1c1c1c;
+    --accent-foreground: #ffffff;
+    --border: #2c2c2c;
+    --input: #2c2c2c;
+    --ring: #ffffff;
+
+    /* 破坏性操作在单色下无法用色相区分，统一走「反色」：
+     * 底色变前景色、前景色变底色，配合 TSX 注入的 !! 前缀。 */
+    --destructive: #ffffff;
+
+    /* 图表：五级灰阶 */
+    --chart-1: #ffffff;
+    --chart-2: #c8c8c8;
+    --chart-3: #9a9a9a;
+    --chart-4: #6a6a6a;
+    --chart-5: #4a4a4a;
+
+    /* 侧栏 */
+    --sidebar: #0a0a0a;
+    --sidebar-foreground: #e6e6e6;
+    --sidebar-primary: #ffffff;
+    --sidebar-primary-foreground: #0a0a0a;
+    --sidebar-accent: #1c1c1c;
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: #2c2c2c;
+    --sidebar-ring: #ffffff;
+
+    /* 代码高亮：把宿主的彩色方案整套换成灰阶 */
+    --hljs-bg: var(--muted);
+    --hljs-fg: var(--foreground);
+    --hljs-comment: #6a6a6a;
+    --hljs-keyword: #ffffff;
+    --hljs-string: #c8c8c8;
+    --hljs-number: #9a9a9a;
+    --hljs-title: #e6e6e6;
+    --hljs-variable: #b0b0b0;
+    --hljs-operator: var(--foreground);
+    --hljs-deletion: #ffffff;
+    --hljs-addition: #c8c8c8;
+
+    /* 方角：--radius-* 全部由 --radius 派生 */
+    --radius: 0;
+
+    /* 卡片内边距/分隔距离：提供给 [data-slot="card-header"] 等组件使用 */
+    --card-spacing: 1rem;
+
+    /* 字体：--font-heading 通过 var(--font-sans) 间接取值，一起换掉 */
+    --font-sans:
+        ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", "Courier New",
+        monospace;
+    --font-heading:
+        ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", "Courier New",
+        monospace;
+    font-family:
+        ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", "Courier New",
+        monospace;
+    /* 整站等宽后字宽变大，压一点字距找回可读性 */
+    letter-spacing: -0.01em;
+}
+
+/* @theme inline 把 --font-sans 的字面量直接内联进了 font-sans 工具类，
+ * 所以改变量对 font-sans 无效 —— 必须直接覆盖类名本身。 */
+.font-sans,
+.font-heading {
+    font-family:
+        ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", "Courier New",
+        monospace;
+}
+
+/* ═══════════════ 2. 全局外观 ═══════════════ */
+
+/* CRT：扫描线 + 暗角叠在同一个伪元素上。
+ * 只能用 body::after —— 宿主的 body.app-bg-active::before 已经被背景图功能占用
+ * （index.css:197，z-index:-1）。 */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px 3px),
+        radial-gradient(ellipse at center, transparent 52%, rgba(0, 0, 0, 0.6) 100%);
+}
+
+/* 荧光辉光。表单控件关掉，否则输入的文字会发糊。 */
+body {
+    text-shadow: 0 0 6px rgb(255 255 255 / 0.18);
+}
+input,
+textarea,
+.term-input-field {
+    text-shadow: none;
+}
+
+/* 选中态：反相色块 */
+::selection {
+    background: var(--foreground);
+    color: var(--background);
+}
+
+/* 滚动条 */
+*::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+*::-webkit-scrollbar-track {
+    background: var(--background);
+}
+*::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border: 2px solid var(--background);
+}
+*::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
+}
+
+/* ═══════════════ 3. 装饰类 ═══════════════ */
+
+/* 前缀标记：▸ # ▌ !! 之类 */
+.term-mark {
+    color: var(--foreground);
+    opacity: 0.85;
+}
+.term-mark.is-warn {
+    opacity: 1;
+    font-weight: 700;
+}
+
+/* 紧凑包裹（[标签] 、名称: ） */
+.term-tag {
+    letter-spacing: 0.05em;
+}
+
+/* 窗口标题栏 */
+.term-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    color: var(--muted-foreground);
+}
+.term-titlebar-mark {
+    color: var(--foreground);
+    font-weight: 700;
+}
+.term-titlebar-name {
+    flex: none;
+    text-transform: lowercase;
+}
+.term-titlebar-rule {
+    flex: 1;
+    height: 1px;
+    background: repeating-linear-gradient(to right, currentColor 0 4px, transparent 4px 9px);
+    opacity: 0.7;
+}
+
+/* 弹窗里的标题栏满幅铺开：抵消 popup 自带的 1rem 内边距，
+ * 并给右上角的绝对定位关闭按钮留位。 */
+[data-slot="dialog-content"] {
+    padding-top: 0;
+}
+[data-slot="dialog-content"] .term-titlebar {
+    margin-inline: -1rem;
+    padding: 0.5rem 2.75rem 0.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+}
+/* 抽屉的 padding 来自子节点，标题栏自己负责内边距。 */
+[data-slot="sheet-content"] .term-titlebar {
+    padding: 0.6rem 2.75rem 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+/* ═══════════════ 4. 输入框 ═══════════════
+ * <input> 是 replaced element，渲染不了伪元素，提示符只能放在外层盒子里。
+ * 边框与内边距从 input 移到 wrapper，聚焦态用 :focus-within 接管。 */
+.term-input {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    width: 100%;
+    padding: 0 0.6rem;
+    background: var(--background);
+    border: 1px solid var(--input);
+    border-radius: 0;
+    transition: border-color 120ms linear;
+}
+.term-input:has(:focus-visible) {
+    border-color: var(--ring);
+    outline: 2px solid rgb(255 255 255 / 0.35);
+    outline-offset: 1px;
+}
+.term-input:has(:disabled) {
+    opacity: 0.5;
+}
+.term-input:has([aria-invalid="true"]),
+.term-input[aria-invalid="true"] {
+    border-color: var(--foreground);
+    border-style: dashed;
+}
+.term-input-prompt {
+    flex: none;
+    color: var(--muted-foreground);
+    user-select: none;
+}
+.term-input-field {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    outline: none;
+    color: var(--foreground);
+}
+.term-input-field:focus-visible,
+.term-input-field:focus {
+    border-color: transparent;
+    box-shadow: none;
+    outline: none;
+}
+.term-input-field:disabled {
+    background: transparent;
+    opacity: 1;
+    cursor: not-allowed;
+}
+
+/* ═══════════════ 5. 逐插槽 ═══════════════ */
+
+/* ── button ─────────────────────────────── */
+[data-slot="button"] {
+    border-radius: 0;
+    letter-spacing: 0.03em;
+}
+/* 破坏性按钮反色：白底黑字（宿主给的是 bg-destructive/10 + text-destructive）。 */
+[data-slot="button"].text-destructive {
+    background-color: var(--foreground);
+    color: var(--background);
+    border-color: var(--foreground);
+}
+[data-slot="button"].text-destructive:hover {
+    background-color: var(--foreground);
+    color: var(--background);
+    opacity: 0.85;
+}
+
+/* ── badge ──────────────────────────────── */
+[data-slot="badge"] {
+    border-radius: 0;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+[data-slot="badge"][data-variant="destructive"] {
+    background-color: var(--foreground);
+    color: var(--background);
+    border-color: var(--foreground);
+}
+
+/* ── input ──────────────────────────────── */
+/* 边框已经移到 .term-input，这里只确保宿主的类不再生效。 */
+[data-slot="input"] {
+    border: 0;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+/* ── label ──────────────────────────────── */
+[data-slot="label"] {
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+}
+
+/* ── separator ────────────────────────────
+ * 宿主写的是 data-horizontal / data-vertical，而 Base UI 实际下发的是
+ * data-orientation，所以宿主那两条尺寸类是死的 —— 这里补上真实尺寸并改成虚线。 */
+[data-slot="separator"][data-orientation="horizontal"] {
+    width: 100%;
+    height: 1px;
+    background: repeating-linear-gradient(to right, currentColor 0 6px, transparent 6px 12px);
+    opacity: 0.45;
+}
+[data-slot="separator"][data-orientation="vertical"] {
+    width: 1px;
+    height: auto;
+    align-self: stretch;
+    background: repeating-linear-gradient(to bottom, currentColor 0 6px, transparent 6px 12px);
+    opacity: 0.45;
+}
+
+/* ── skeleton ───────────────────────────── */
+[data-slot="skeleton"] {
+    border-radius: 0;
+    background: repeating-linear-gradient(
+        to bottom,
+        var(--muted) 0 6px,
+        color-mix(in srgb, var(--muted) 55%, var(--background)) 6px 12px
+    );
+    animation: term-scan 1.6s linear infinite;
+}
+@keyframes term-scan {
+    from {
+        background-position: 0 0;
+    }
+    to {
+        background-position: 0 12px;
+    }
+}
+
+/* ── checkbox ─────────────────────────────
+ * 勾选状态在 Base UI 内部，wrapper 拿不到，只能按 data-checked 走 CSS：
+ * 隐藏自带对勾，改成方框里的 x。 */
+[data-slot="checkbox"] {
+    border-radius: 0;
+    background: transparent;
+    border-color: var(--input);
+}
+[data-slot="checkbox"][data-checked] {
+    background: transparent;
+    border-color: var(--foreground);
+    color: var(--foreground);
+}
+[data-slot="checkbox-indicator"] svg {
+    display: none;
+}
+[data-slot="checkbox"][data-checked] [data-slot="checkbox-indicator"]::after {
+    content: "x";
+    font-size: 0.75rem;
+    line-height: 1;
+    font-weight: 700;
+}
+
+/* ── card ───────────────────────────────── */
+[data-slot="card"] {
+    border-radius: 0;
+    border: 1px solid var(--border);
+    box-shadow: none;
+    background: var(--card);
+}
+[data-slot="card-header"] {
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: var(--card-spacing, 1rem);
+}
+[data-slot="card-title"] {
+    font-family:
+        ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, monospace;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+[data-slot="card-description"] {
+    font-size: 0.75rem;
+}
+[data-slot="card-footer"] {
+    background: transparent;
+    border-top: 1px dashed var(--border);
+}
+
+/* ── tabs ───────────────────────────────── */
+[data-slot="tabs-list"] {
+    border-radius: 0;
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 2px;
+}
+[data-slot="tabs-trigger"] {
+    border-radius: 0;
+    letter-spacing: 0.04em;
+}
+/* 选中态：Base UI 下发 data-active，同时兜底 aria-selected。 */
+[data-slot="tabs-trigger"]:is([data-active], [aria-selected="true"]) {
+    background: var(--foreground);
+    color: var(--background);
+}
+[data-slot="tabs-trigger"]:is([data-active], [aria-selected="true"])::after {
+    opacity: 0;
+}
+/* tabs-content 不加边框和内边距：它是 flex-1，加 padding 会压缩调用方
+ * 算好的高度，在满屏高度的页签面板里会直接溢出。页签的终端感由 tabs-list
+ * 与 tabs-trigger 承担。 */
+
+/* ── dialog ─────────────────────────────── */
+[data-slot="dialog-overlay"] {
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: none;
+}
+[data-slot="dialog-content"] {
+    border-radius: 0;
+    border: 1px solid var(--foreground);
+    box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.55);
+    background: var(--popover);
+    padding-inline: 1rem;
+    padding-bottom: 1rem;
+}
+[data-slot="dialog-header"] {
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 0.75rem;
+}
+[data-slot="dialog-title"] {
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+/* 宿主已经自带 -mx-4 做满幅出血，这里只换掉底色与分隔线，
+ * 不能再叠一层负 margin，否则会溢出 popup 两侧。 */
+[data-slot="dialog-footer"] {
+    background: transparent;
+    border-top: 1px dashed var(--border);
+}
+[data-slot="dialog-close"] {
+    border-radius: 0;
+}
+
+/* ── sheet ──────────────────────────────── */
+[data-slot="sheet-overlay"] {
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: none;
+}
+[data-slot="sheet-content"] {
+    border-radius: 0;
+    background: var(--popover);
+    box-shadow: -8px 0 0 rgba(0, 0, 0, 0.35);
+}
+[data-slot="sheet-content"][data-side="right"],
+[data-slot="sheet-content"][data-side="left"] {
+    border-inline: 1px solid var(--foreground);
+}
+[data-slot="sheet-content"][data-side="top"],
+[data-slot="sheet-content"][data-side="bottom"] {
+    border-block: 1px solid var(--foreground);
+}
+[data-slot="sheet-header"] {
+    border-bottom: 1px dashed var(--border);
+}
+[data-slot="sheet-footer"] {
+    background: transparent;
+    border-top: 1px dashed var(--border);
+}
+[data-slot="sheet-title"] {
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+[data-slot="sheet-close"] {
+    border-radius: 0;
+}
+
+/* ── dropdown menu ──────────────────────── */
+[data-slot="dropdown-menu-content"],
+[data-slot="dropdown-menu-sub-content"] {
+    border-radius: 0;
+    border: 1px solid var(--foreground);
+    background: var(--popover);
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.5);
+    padding: 4px;
+}
+[data-slot="dropdown-menu-label"] {
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+[data-slot="dropdown-menu-item"],
+[data-slot="dropdown-menu-checkbox-item"],
+[data-slot="dropdown-menu-radio-item"],
+[data-slot="dropdown-menu-sub-trigger"] {
+    border-radius: 0;
+    letter-spacing: 0.03em;
+}
+/* 悬停/聚焦：反相色块，像终端里被光标选中的一行。 */
+[data-slot="dropdown-menu-item"]:focus,
+[data-slot="dropdown-menu-item"][data-highlighted],
+[data-slot="dropdown-menu-checkbox-item"]:focus,
+[data-slot="dropdown-menu-checkbox-item"][data-highlighted],
+[data-slot="dropdown-menu-radio-item"]:focus,
+[data-slot="dropdown-menu-radio-item"][data-highlighted],
+[data-slot="dropdown-menu-sub-trigger"]:focus,
+[data-slot="dropdown-menu-sub-trigger"][data-highlighted] {
+    background: var(--foreground);
+    color: var(--background);
+}
+[data-slot="dropdown-menu-item"]:focus .term-mark,
+[data-slot="dropdown-menu-item"][data-highlighted] .term-mark,
+[data-slot="dropdown-menu-checkbox-item"]:focus .term-mark,
+[data-slot="dropdown-menu-checkbox-item"][data-highlighted] .term-mark,
+[data-slot="dropdown-menu-radio-item"]:focus .term-mark,
+[data-slot="dropdown-menu-radio-item"][data-highlighted] .term-mark,
+[data-slot="dropdown-menu-sub-trigger"]:focus .term-mark,
+[data-slot="dropdown-menu-sub-trigger"][data-highlighted] .term-mark {
+    color: var(--background);
+    opacity: 1;
+}
+/* 破坏性菜单项反色 */
+[data-slot="dropdown-menu-item"][data-variant="destructive"] {
+    color: var(--foreground);
+}
+[data-slot="dropdown-menu-item"][data-variant="destructive"]:focus,
+[data-slot="dropdown-menu-item"][data-variant="destructive"][data-highlighted] {
+    background: var(--foreground);
+    color: var(--background);
+}
+/* 勾选/单选指示器改成终端式的 x */
+[data-slot="dropdown-menu-checkbox-item-indicator"] svg,
+[data-slot="dropdown-menu-radio-item-indicator"] svg {
+    display: none;
+}
+[data-slot="dropdown-menu-checkbox-item-indicator"]::after {
+    content: " ";
+    font-weight: 700;
+    line-height: 1;
+}
+[data-slot="dropdown-menu-checkbox-item"][data-checked] [data-slot="dropdown-menu-checkbox-item-indicator"]::after {
+    content: "x";
+}
+[data-slot="dropdown-menu-radio-item"][data-checked] [data-slot="dropdown-menu-radio-item-indicator"]::after {
+    content: "*";
+    font-weight: 700;
+    line-height: 1;
+}
+[data-slot="dropdown-menu-separator"] {
+    background: repeating-linear-gradient(to right, currentColor 0 5px, transparent 5px 10px);
+    opacity: 0.4;
+    height: 1px;
+}
+[data-slot="dropdown-menu-shortcut"] {
+    letter-spacing: 0.08em;
+    opacity: 0.75;
+}
+[data-slot="dropdown-menu-trigger"] {
+    border-radius: 0;
+}
+
+/* ── tooltip ────────────────────────────── */
+[data-slot="tooltip-content"] {
+    border-radius: 0;
+    letter-spacing: 0.05em;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
+}
+[data-slot="tooltip-trigger"] {
+    border-radius: 0;
+}

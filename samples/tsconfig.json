@@ -1,0 +1,26 @@
+{
+    /*
+     * 仓库内示例插件的类型检查（bun run typecheck:plugins）。
+     *
+     * 刻意指向 public/chenify-plugin-types/types —— 那正是发给插件作者的同一份产物，
+     * 所以示例既是文档，也是这条链路的回归测试：生成器坏了、宿主 props 变了，这里先炸。
+     *
+     * strict 比应用本身（tsconfig.app.json 没开）更严，是作者侧该有的样子。
+     */
+    "compilerOptions": {
+        "target": "es2023",
+        "lib": ["ES2023", "DOM"],
+        "module": "esnext",
+        "moduleResolution": "bundler",
+        "jsx": "react-jsx",
+        "strict": true,
+        "noEmit": true,
+        "skipLibCheck": true,
+        "allowImportingTsExtensions": true,
+        "verbatimModuleSyntax": true,
+        "paths": {
+            "@/*": ["../public/chenify-plugin-types/types/src/*"]
+        }
+    },
+    "include": ["*/ui"]
+}

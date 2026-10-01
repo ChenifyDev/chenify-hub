@@ -25,7 +25,7 @@ import { useHostUI, usePluginUI } from "./api.tsx";
 import { createPluginSdk, type PluginSdk } from "./sdk.ts";
 import { safeJoin } from "./manifest.ts";
 import { setPluginStyle } from "./styles.ts";
-import { PLUGIN_SLOT_MODULES, SCRIPT_EXTENSIONS, type PluginFile } from "./types.ts";
+import { PLUGIN_SLOT_MODULES, SCRIPT_EXTENSIONS, type PluginFile, type PluginSlot } from "./types.ts";
 import { isScriptPath } from "./types.ts";
 import { baseUiModules, loadLucideIcons, lucideStaticModules } from "virtual:chenify-plugin-host";
 
@@ -133,7 +133,10 @@ function resolveRelative(specifier: string, importerPath: string, files: Map<str
     const baseDir = slash < 0 ? "" : importerPath.slice(0, slash);
 
     const refs: string[] = [specifier];
-    const dot = specifier.lastIndexOf(".");
+    const lastSlash = specifier.lastIndexOf("/");
+    const lastSegment = lastSlash < 0 ? specifier : specifier.slice(lastSlash + 1);
+    const lastDot = lastSegment.lastIndexOf(".");
+    const dot = lastDot < 0 ? -1 : lastSlash + 1 + lastDot;
     if (dot < 0) {
         for (const ext of [...SCRIPT_EXTENSIONS, ".css"]) refs.push(`${specifier}${ext}`);
         refs.push(`${specifier}/index.tsx`, `${specifier}/index.ts`);
@@ -364,7 +367,7 @@ function loadModule(graph: PluginGraph, path: string, sdk: PluginSdk): Record<st
 }
 
 /** 取出插件为某个插槽提供的组件（模块的 default 导出）。 */
-export function loadSlotComponent(graph: PluginGraph, slot: string, path: string, sdk: PluginSdk): unknown {
+export function loadSlotComponent(graph: PluginGraph, slot: PluginSlot, path: string, sdk: PluginSdk): unknown {
     const component = loadModule(graph, path, sdk).default;
     if (typeof component !== "function") {
         throw new PluginResolveError(`${path} 需要 default 导出一个 React 组件（插槽 "${slot}"）`);

@@ -20,8 +20,11 @@ export type PluginInstallSource = "folder" | "zip" | "url";
 export type PluginManifestUi = {
     /** 需要注入到 <head> 的全局样式（通常是 ui/styles.css）。 */
     style: string[];
-    /** 插槽名 → 替换宿主组件的模块路径，模块的 default 导出即替换组件。 */
-    components: Record<string, string>;
+    /**
+     * 插槽名 → 替换宿主组件的模块路径，模块的 default 导出即替换组件。
+     * 键被约束成 PluginSlot，于是编辑器能补全插槽名、也能标出拼错的。
+     */
+    components: Partial<Record<PluginSlot, string>>;
 };
 
 /** plugin.json 解析后的规范化结果。 */
@@ -107,20 +110,39 @@ export const PLUGIN_SLOT_MODULES = {
     "tooltip.tsx": ["Tooltip", "TooltipTrigger", "TooltipContent", "TooltipProvider"],
 } as const;
 
-function lowerFirst(value: string): string {
-    return value.charAt(0).toLowerCase() + value.slice(1);
+/** 首字母小写，与插槽名的推导规则严格对应。 */
+type LowerFirst<S extends string> = S extends `${infer Head}${infer Tail}` ? `${Lowercase<Head>}${Tail}` : S;
+
+function lowerFirst<S extends string>(value: S): LowerFirst<S> {
+    return (value.charAt(0).toLowerCase() + value.slice(1)) as LowerFirst<S>;
 }
 
+/**
+ * 全部合法插槽名的类型：从上表的导出名推导，不额外维护一份清单。
+ * 宿主加一个导出、这里就多一个字面量，改插件组件映射表时会立刻被断言抓住。
+ */
+export type PluginSlot = LowerFirst<(typeof PLUGIN_SLOT_MODULES)[keyof typeof PLUGIN_SLOT_MODULES][number]>;
+
 /** 全部合法插槽名，已排序，用于校验与错误提示。 */
-export const PLUGIN_SLOTS: readonly string[] = Object.values(PLUGIN_SLOT_MODULES)
+export const PLUGIN_SLOTS: readonly PluginSlot[] = Object.values(PLUGIN_SLOT_MODULES)
     .flat()
     .map(lowerFirst)
     .sort();
 
-const SLOT_SET = new Set(PLUGIN_SLOTS);
+const SLOT_SET: ReadonlySet<string> = new Set(PLUGIN_SLOTS);
 
-export function isPluginSlot(name: string): boolean {
+export function isPluginSlot(name: string): name is PluginSlot {
     return SLOT_SET.has(name);
+}
+
+/**
+ * manifest 里声明的插槽，按声明顺序返回 [插槽名, 模块路径]。
+ *
+ * Object.keys 只能给出 string[]，调用方又不得不回查一遍 components[slot]（可能是 undefined），
+ * 这里一次把类型和存在性都解决掉。
+ */
+export function manifestSlotEntries(manifest: PluginManifest): [PluginSlot, string][] {
+    return Object.entries(manifest.ui.components) as [PluginSlot, string][];
 }
 
 /** 参与 TSX 转译的扩展名。 */

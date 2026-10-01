@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type { ComponentType } from "react";
 
 import { deletePlugin, listPlugins, putPlugins } from "./db.ts";
-import type { PluginError as PluginErrorRecord, StoredPlugin } from "./types.ts";
+import type { PluginError as PluginErrorRecord, PluginSlot, StoredPlugin } from "./types.ts";
 
 /** 单个插槽的覆盖信息。记录来源插件，便于渲染出错时定位到具体插件。 */
 export type PluginOverrideEntry = {
@@ -11,8 +11,8 @@ export type PluginOverrideEntry = {
     pluginName: string;
 };
 
-/** 插槽名 → 覆盖信息。 */
-export type PluginOverrides = Record<string, PluginOverrideEntry>;
+/** 插槽名 → 覆盖信息。没被任何插件覆盖的插槽不在表里。 */
+export type PluginOverrides = Partial<Record<PluginSlot, PluginOverrideEntry>>;
 
 type PluginState = {
     /** IndexedDB 是否已读完；false 时 ui/*.tsx 一律使用默认组件。 */

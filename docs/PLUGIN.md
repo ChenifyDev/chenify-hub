@@ -3,8 +3,16 @@
 插件可以整体替换 ChenifyHub 的界面组件 —— 按钮、卡片、输入框、弹窗、菜单等等。
 所有安装、转译、加载都在浏览器本地完成，不需要后端，也不需要构建步骤。
 
-仓库里的可运行示例在 [`samples/plugin-cozy-purple`](../samples/plugin-cozy-purple)，
+仓库里有两个可运行示例：
+
+- [`samples/plugin-cozy-purple`](../samples/plugin-cozy-purple) —— 4 个插槽，最小上手
+- [`samples/plugin-terminal`](../samples/plugin-terminal) —— **全部 55 个插槽**，黑白单色终端风，
+  演示兄弟节点注入、破坏性反色、CRT 特效与逐插槽结构改造
+
 安装方式就是把这个文件夹整个拖进 `/plugins` 页面。
+
+写 TypeScript 的话顺手把类型模板也下下来（`/plugins` 页面上的按钮），
+每个插槽的 props 都是精确类型，见 [§4 类型支持](#类型支持)。
 
 > **安全提示：插件代码会以任意 JavaScript 的权限在你的浏览器里执行。**
 > 宿主只限制了插件能 `import` 什么，但 `new Function` 跑在页面上下文里，
@@ -24,6 +32,8 @@ cozy-purple/
 - 根目录必须有 `plugin.json`。
 - 必须有 `ui/` 目录，否则安装会被拒绝。
 - 上限 200 个文件、单文件 4MB、总体积 16MB。ZIP 里的路径不能跳出包根目录。
+- 目录里别放 `tsconfig.json` 之类开发用的东西 —— 它们会被一起装进 IndexedDB。
+  类型支持见 [§4 类型支持](#类型支持)。
 
 ## 2. plugin.json
 
@@ -56,6 +66,18 @@ cozy-purple/
 `ui.style` 和 `ui.components` 至少要有一个，否则装上去不会有任何效果。
 
 路径相对于 `plugin.json` 所在目录，可以用 `./` 前缀，也可以用 `/` 从包根开始写。
+
+想让编辑器补全插槽名、把写错的标红，把类型包里的 `plugin.schema.json` 拷一份到
+插件根目录（见 [§4 类型支持](#类型支持)）：
+
+```json
+{
+    "$schema": "./plugin.schema.json",
+    "id": "cozy-purple"
+}
+```
+
+不写 `$schema` 的话，多数编辑器也会自动找同目录下的 `*.schema.json`。
 
 ## 3. 组件插槽
 
@@ -108,8 +130,76 @@ export default function Button(props) {
   自己重新拼 className 时别把它丢掉。
 - 模块必须 `default` 导出一个函数组件；没有 default 导出会在加载时报错
   （见 §10）。
-- 插件只被**转译**，不被类型检查。`tsc` 的报错不会阻止安装，但会在运行时炸在
-  对应插槽上，所以别靠类型系统兜底。
+- 宿主只**转译**插件，不做类型检查：`tsc` 的报错不会阻止安装，但会在运行时炸在
+  对应插槽上。作者自己可以查 —— 下面这一节就是干这个的。
+
+### 类型支持
+
+宿主组件的 props 就是你的 props 契约，所以类型直接从站点源码生成，不会和实现漂移：
+宿主给 `Button` 加了 `size`、改了 `variant`，你重新下载类型模板就跟着变。
+
+在 `/plugins` 页面点「下载类型模板」拿到 `chenify-plugin-types.zip`，解压到**插件目录的隔壁**：
+
+```
+workspace/
+├── my-plugin/                 ← 拖进 /plugins 的只有这个
+│   ├── plugin.json
+│   ├── ui/button.tsx
+│   └── tsconfig.json          ← { "extends": "../chenify-plugin-types/tsconfig.json", "include": ["ui"] }
+└── chenify-plugin-types/      ← 解压出来的类型包
+    ├── tsconfig.json          ← 基线配置，已经把 @/* 指到 types/src/*
+    ├── types/src/**.d.ts      ← 宿主声明（插件 API、55 个插槽、cn）
+    ├── plugin.schema.json     ← plugin.json 的 JSON Schema
+    └── README.md
+```
+
+> 类型包**不要放进插件包里**：它会跟着被装进 IndexedDB，白白吃掉 200 文件 / 16MB 的额度。
+
+装依赖，起步只要两个：
+
+```bash
+npm i -D typescript @types/react
+```
+
+这样就能开始写了，`card*` `input` `label` `skeleton` `dropdownMenuShortcut`
+`dialogHeader/Footer` `sheetHeader/Footer` 这些纯 DOM 的插槽立刻就是字段级精确的。
+
+其余插槽（`button` `badge` `checkbox` `separator` `tabs*` `dialog*` `sheet*`
+`dropdownMenu*` `tooltip*`）的 props 来自 Base UI 原语，**不装 `@base-ui/react`
+也能编**（那部分 props 退化成 `any`，不报错、也不校验），想要字段级类型就按站点的
+版本补上这几个包：
+
+```bash
+npm i -D @base-ui/react class-variance-authority lucide-react
+```
+
+`lucide-react` 只在你用图标时才需要，版本对着站点 `package.json` 抄。
+
+写起来是这样，`props` 的字段、补全、拼错的插槽名都会被 `tsc` 抓住：
+
+```tsx
+import { cn } from "@/lib/utils";
+import { useHostUI, type SlotProps } from "@/plugins/api";
+
+export default function Button(props: SlotProps<"button">) {
+    const Host = useHostUI("button");
+    if (!Host) return null;
+    return <Host {...props} className={cn("rounded-full font-semibold", props.className)} />;
+}
+```
+
+- `SlotProps<"button">` 就是宿主 `Button` 的 props 类型；55 个插槽都可用。
+- `useHostUI("button")` 返回的组件也有类型，`props` 不写注解也推断得出来。
+- `plugin.*`、`cn` 同样有类型（`@/plugins/api`、`@/lib/utils`）。
+- 类型只用 `import type` 引。sucrase 会把 `import type` 整条擦掉，运行时不需要它。
+- 插槽名拼错会直接报 `Type '"buton"' does not satisfy the constraint 'PluginSlot'`。
+
+`plugin.json` 也有校验：把类型包里的 `plugin.schema.json` 拷一份到插件根目录，
+编辑器就会补全插槽名，并把拼错的、未声明的插槽标红。
+
+> 类型包是**快照**。站点升级过宿主组件后，重新下载一次即可。
+> 仓库里的示例（[`samples/*`](../samples)）用的就是同一份产物，`bun run typecheck:plugins`
+> 会重新生成并以 `strict` 检查全部示例 —— 示例既是文档，也是这条链路的回归测试。
 
 ### 可以 import 的模块
 
@@ -126,7 +216,7 @@ export default function Button(props) {
 | `@/lib/utils` | `cn` |
 | `@/components/ui/*` | 宿主 UI 组件（**注意上面的递归陷阱**） |
 | `@/plugins/api` | `plugin`、`useHostUI`、`usePluginUI` |
-| `./relative` | 插件包内的相对路径，支持 `.css` 与图片等静态资源 |
+| `./relative` | 插件包内的相对路径，扩展名可省（宿主自动补 `.ts`/`.tsx`/… 与 `/index`），也支持 `.css` 与图片等静态资源 |
 
 ```tsx
 // 图片资源：import 出来就是 blob URL
@@ -243,7 +333,9 @@ plugin.storage.set("k", "v");       // 自动加 plugin:<id>: 前缀
   模块加载/转译失败（`PluginResolveError`）则直接抛在安装或启用阶段。
 - **没有 HMR。** 改完源码要重新装一次同 `id` 的插件才会生效（文件夹或 zip 都行），
   启用状态与顺序会保留。
-- **类型错误不会拦你。** 宿主只用 sucrase 转译，不做类型检查 —— 报错只在运行时出现。
+- **类型错误不会拦你，但你自己能查。** 宿主只用 sucrase 转译，不做类型检查 ——
+  报错只在运行时出现。装上 [§4 类型支持](#类型支持) 里的类型模板后，`tsc` 会在
+  安装之前就把错 props、错插槽名揪出来。类型包是快照，站点组件改过之后要重新下载。
 - **确认插件真的生效了：** `document.documentElement.dataset.plugin` 会是
   `"a b"` 这样的空格分隔 id 列表，也可以用它给自己的 CSS 做前缀选择器。
 - **怀疑死循环 / 递归：** 九成是 §4 里那个 `@/components/ui/*` 的递归陷阱，
@@ -332,15 +424,18 @@ plugin.storage.set("k", "v");       // 自动加 plugin:<id>: 前缀
 **`my-first/ui/button.tsx`**
 
 ```tsx
-import { useHostUI } from "@/plugins/api";
+import { useHostUI, type SlotProps } from "@/plugins/api";
 import { cn } from "@/lib/utils";
 
-export default function Button(props) {
+export default function Button(props: SlotProps<"button">) {
     const Host = useHostUI("button");
     if (!Host) return null;
     return <Host {...props} className={cn("rounded-full font-semibold shadow-none", props.className)} />;
 }
 ```
+
+`SlotProps<"button">` 那行需要类型模板（[§4 类型支持](#类型支持)）；没有它就把
+参数写成 `(props)`，其余代码一字不用改 —— 宿主只转译，不检查类型。
 
 **`my-first/ui/styles.css`**
 
@@ -353,3 +448,17 @@ export default function Button(props) {
 
 装完的效果是：全站主色转紫，所有按钮变胶囊。改任意一个文件，把文件夹重新
 装一次即可更新（同 `id`，启用状态与顺序保留）。
+
+想看覆盖全部 55 个插槽、并且真的在改 DOM 结构的完整例子，
+直接读 [`samples/plugin-terminal`](../samples/plugin-terminal)。几个值得留意的点：
+
+- 注入子节点时优先用**兄弟节点**（`<>标记{children}</>`）而不是 `<div>` 包裹 ——
+  宿主的 `dialog-content` 是 `grid gap-4`、`sheet-content` 是 `flex-col gap-4`，
+  包一层就会吃掉所有间距，`SheetFooter` 的 `mt-auto` 也会失效。
+- 只要解构了 `children`，就必须在 JSX 里把它写回去，否则会覆盖掉调用方的内容。
+- 每个插槽都写成 `props: SlotProps<"…">`，55 个插槽一个不落；示例在 `strict` 下
+  由 `bun run typecheck:plugins` 检查，类型来自生成给作者的那份声明。
+- 调色板用 `html:root { ... }` 而不是 `:root { ... }`：宿主的 `:root` / `.dark`
+  令牌同样是未分层样式，`html:root` 的特异性（0,1,1）高一级，不依赖注入顺序。
+- 本插件的 `ui/styles.css` 故意不写 `@layer`：未分层样式永远赢过分层样式，
+  所以能直接压过 Tailwind 工具类，不需要 `!important`。

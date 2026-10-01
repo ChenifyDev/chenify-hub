@@ -1,7 +1,7 @@
 import { Separator as SeparatorPrimitive } from "@base-ui/react/separator";
 
 import { cn } from "@/lib/utils";
-import { withPluginUI } from "@/plugins/api.tsx";
+import { withPluginUI } from "@/plugins/api";
 
 const Separator = withPluginUI(
     "separator",

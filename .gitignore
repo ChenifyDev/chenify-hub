@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# 由 scripts/gen-plugin-types.ts 生成，给插件作者的类型包
+public/chenify-plugin-types
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

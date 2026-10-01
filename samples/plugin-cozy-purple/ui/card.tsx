@@ -1,7 +1,7 @@
-import { useHostUI } from "@/plugins/api";
+import { useHostUI, type SlotProps } from "@/plugins/api";
 import { cn } from "@/lib/utils";
 
-export default function Card(props) {
+export default function Card(props: SlotProps<"card">) {
     const Host = useHostUI("card");
     if (!Host) return null;
 

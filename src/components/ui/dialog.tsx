@@ -2,7 +2,7 @@
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 
 import { cn } from "@/lib/utils";
-import { withPluginUI } from "@/plugins/api.tsx";
+import { withPluginUI } from "@/plugins/api";
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
 

@@ -1,7 +1,7 @@
-import { useHostUI } from "@/plugins/api";
+import { useHostUI, type SlotProps } from "@/plugins/api";
 import { cn } from "@/lib/utils";
 
-export default function Badge(props) {
+export default function Badge(props: SlotProps<"badge">) {
     const Host = useHostUI("badge");
     if (!Host) return null;
 

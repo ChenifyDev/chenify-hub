@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
-import { withPluginUI } from "@/plugins/api.tsx";
+import { withPluginUI } from "@/plugins/api";
 
 const Label = withPluginUI("label", function Label({ className, ...props }: React.ComponentProps<"label">) {
     return (

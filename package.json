@@ -5,10 +5,12 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
+        "prebuild": "node scripts/gen-plugin-types.ts",
         "build": "tsc -b && vite build",
         "lint": "oxlint",
-        "preview": "vite preview",
-        "format": "oxfmt"
+        "format": "oxfmt",
+        "gen:plugin-types": "node scripts/gen-plugin-types.ts",
+        "typecheck:plugins": "node scripts/gen-plugin-types.ts && tsc -p samples/tsconfig.json"
     },
     "dependencies": {
         "@base-ui/react": "^1.7.0",

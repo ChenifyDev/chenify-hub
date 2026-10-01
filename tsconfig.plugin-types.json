@@ -1,0 +1,36 @@
+{
+    /*
+     * 只为「生成给插件作者的 .d.ts」服务（scripts/gen-plugin-types.ts）。
+     *
+     * 入口只有 authoring.ts，于是 emit 出来的就只有作者能碰到的那几个模块：
+     * 插件 API、插槽类型映射、13 个宿主 UI 组件、cn。
+     * 刻意不带 "types" 与 "strict"：这里不设 vite 的环境类型，作者也不需要；
+     * 检查选项跟 tsconfig.app.json 保持一致，emit 出来的类型才和仓库里看到的一致。
+     */
+    "compilerOptions": {
+        "target": "es2023",
+        "lib": ["ES2023", "DOM"],
+        "module": "esnext",
+        "moduleResolution": "bundler",
+        "jsx": "react-jsx",
+        "skipLibCheck": true,
+        "paths": {
+            "@/*": ["./src/*"]
+        },
+
+        /* Bundler mode */
+        "allowImportingTsExtensions": true,
+        "rewriteRelativeImportExtensions": true,
+        "verbatimModuleSyntax": true,
+        "moduleDetection": "force",
+        "erasableSyntaxOnly": true,
+
+        /* 只发声明 */
+        "noEmit": false,
+        "declaration": true,
+        "emitDeclarationOnly": true,
+        "rootDir": ".",
+        "outDir": "./node_modules/.tmp/plugin-types"
+    },
+    "files": ["src/plugins/authoring.ts"]
+}
