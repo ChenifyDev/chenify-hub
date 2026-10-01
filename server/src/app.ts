@@ -16,7 +16,9 @@ import { routes as oauthRoutes } from "./oauth";
 
 const app = new Hono();
 
-const allowedOrigins = ["https://hub.chenify.top", "http://localhost:5173"];
+const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? "https://hub.chenify.top")
+    .split(",")
+    .map((origin) => origin.trim());
 
 app.use(
     cors({

@@ -3,7 +3,6 @@
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
 
 import { cn } from "@/lib/utils";
-import { withPluginUI } from "@/plugins/api";
 
 function TooltipProviderImpl({ delay = 0, ...props }: TooltipPrimitive.Provider.Props) {
     return <TooltipPrimitive.Provider data-slot="tooltip-provider" delay={delay} {...props} />;
@@ -52,9 +51,9 @@ function TooltipContentImpl({
     );
 }
 
-const Tooltip = withPluginUI("tooltip", TooltipImpl);
-const TooltipTrigger = withPluginUI("tooltipTrigger", TooltipTriggerImpl);
-const TooltipContent = withPluginUI("tooltipContent", TooltipContentImpl);
-const TooltipProvider = withPluginUI("tooltipProvider", TooltipProviderImpl);
+const Tooltip = TooltipImpl;
+const TooltipTrigger = TooltipTriggerImpl;
+const TooltipContent = TooltipContentImpl;
+const TooltipProvider = TooltipProviderImpl;
 
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };

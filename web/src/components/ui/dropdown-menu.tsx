@@ -2,7 +2,6 @@
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 
 import { cn } from "@/lib/utils";
-import { withPluginUI } from "@/plugins/api";
 import { ChevronRightIcon, CheckIcon } from "lucide-react";
 
 function DropdownMenuImpl({ ...props }: MenuPrimitive.Root.Props) {
@@ -234,21 +233,21 @@ function DropdownMenuShortcutImpl({ className, ...props }: React.ComponentProps<
     );
 }
 
-const DropdownMenu = withPluginUI("dropdownMenu", DropdownMenuImpl);
-const DropdownMenuPortal = withPluginUI("dropdownMenuPortal", DropdownMenuPortalImpl);
-const DropdownMenuTrigger = withPluginUI("dropdownMenuTrigger", DropdownMenuTriggerImpl);
-const DropdownMenuContent = withPluginUI("dropdownMenuContent", DropdownMenuContentImpl);
-const DropdownMenuGroup = withPluginUI("dropdownMenuGroup", DropdownMenuGroupImpl);
-const DropdownMenuLabel = withPluginUI("dropdownMenuLabel", DropdownMenuLabelImpl);
-const DropdownMenuItem = withPluginUI("dropdownMenuItem", DropdownMenuItemImpl);
-const DropdownMenuCheckboxItem = withPluginUI("dropdownMenuCheckboxItem", DropdownMenuCheckboxItemImpl);
-const DropdownMenuRadioGroup = withPluginUI("dropdownMenuRadioGroup", DropdownMenuRadioGroupImpl);
-const DropdownMenuRadioItem = withPluginUI("dropdownMenuRadioItem", DropdownMenuRadioItemImpl);
-const DropdownMenuSeparator = withPluginUI("dropdownMenuSeparator", DropdownMenuSeparatorImpl);
-const DropdownMenuShortcut = withPluginUI("dropdownMenuShortcut", DropdownMenuShortcutImpl);
-const DropdownMenuSub = withPluginUI("dropdownMenuSub", DropdownMenuSubImpl);
-const DropdownMenuSubTrigger = withPluginUI("dropdownMenuSubTrigger", DropdownMenuSubTriggerImpl);
-const DropdownMenuSubContent = withPluginUI("dropdownMenuSubContent", DropdownMenuSubContentImpl);
+const DropdownMenu = DropdownMenuImpl;
+const DropdownMenuPortal = DropdownMenuPortalImpl;
+const DropdownMenuTrigger = DropdownMenuTriggerImpl;
+const DropdownMenuContent = DropdownMenuContentImpl;
+const DropdownMenuGroup = DropdownMenuGroupImpl;
+const DropdownMenuLabel = DropdownMenuLabelImpl;
+const DropdownMenuItem = DropdownMenuItemImpl;
+const DropdownMenuCheckboxItem = DropdownMenuCheckboxItemImpl;
+const DropdownMenuRadioGroup = DropdownMenuRadioGroupImpl;
+const DropdownMenuRadioItem = DropdownMenuRadioItemImpl;
+const DropdownMenuSeparator = DropdownMenuSeparatorImpl;
+const DropdownMenuShortcut = DropdownMenuShortcutImpl;
+const DropdownMenuSub = DropdownMenuSubImpl;
+const DropdownMenuSubTrigger = DropdownMenuSubTriggerImpl;
+const DropdownMenuSubContent = DropdownMenuSubContentImpl;
 
 export {
     DropdownMenu,

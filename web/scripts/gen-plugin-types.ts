@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 import { zipSync } from "fflate";
 import * as ts from "typescript";
 
-import { PLUGIN_SLOT_MODULES } from "../src/plugins/types.ts";
+import { PLUGIN_SLOT_MODULES } from "../src/plugins/slot-modules.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const configPath = path.join(root, "tsconfig.plugin-types.json");
@@ -61,19 +61,16 @@ workspace/
 npm i -D typescript @types/react
 \`\`\`
 
-这样就能开始写了：\`card*\` \`input\` \`label\` \`skeleton\` \`dropdownMenuShortcut\`
-\`dialogHeader/Footer\` \`sheetHeader/Footer\` 这些纯 DOM 的插槽立刻是字段级精确的。
+这样就能开始写了：\`card*\` \`input\` \`label\` \`skeleton\` \`separator\`
+这些纯 DOM 的插槽立刻是字段级精确的。
 
-其余插槽（\`button\` \`badge\` \`checkbox\` \`separator\` \`tabs*\` \`dialog*\`
-\`sheet*\` \`dropdownMenu*\` \`tooltip*\`）的 props 来自 Base UI 原语。**不装
+其余插槽（\`button\` \`badge\` \`checkbox\` \`tabs*\`）的 props 来自 Base UI 原语。**不装
 \`@base-ui/react\` 也能编** —— 那部分 props 退化成 \`any\`，不报错、也不校验。
 想要字段级类型，就按站点的版本补上这几个包：
 
 \`\`\`bash
-npm i -D @base-ui/react class-variance-authority lucide-react
+npm i -D @base-ui/react class-variance-authority
 \`\`\`
-
-\`lucide-react\` 只在用图标时需要，版本对着站点 \`package.json\` 抄。
 
 ## 怎么用
 
@@ -123,7 +120,8 @@ function pluginSchema(): unknown {
             id: {
                 type: "string",
                 pattern: "^[a-z0-9][a-z0-9._-]{0,63}$",
-                description: "唯一标识，只能是小写字母、数字与 . _ -，且以字母或数字开头，最长 64 位。重复安装视为更新。",
+                description:
+                    "唯一标识，只能是小写字母、数字与 . _ -，且以字母或数字开头，最长 64 位。重复安装视为更新。",
             },
             name: { type: "string", minLength: 1, description: "展示名。" },
             version: { type: "string", default: "0.0.0" },

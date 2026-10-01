@@ -1,4 +1,4 @@
-import * as React from "react";
+import type * as React from "react";
 declare const Card: React.ComponentType<React.ClassAttributes<HTMLDivElement> & React.HTMLAttributes<HTMLDivElement> & {
     size?: "default" | "sm";
 }>;

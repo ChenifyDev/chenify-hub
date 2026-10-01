@@ -2,7 +2,6 @@
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 
 import { cn } from "@/lib/utils";
-import { withPluginUI } from "@/plugins/api";
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
 
@@ -121,16 +120,16 @@ function DialogDescriptionImpl({ className, ...props }: DialogPrimitive.Descript
     );
 }
 
-const Dialog = withPluginUI("dialog", DialogImpl);
-const DialogTrigger = withPluginUI("dialogTrigger", DialogTriggerImpl);
-const DialogPortal = withPluginUI("dialogPortal", DialogPortalImpl);
-const DialogClose = withPluginUI("dialogClose", DialogCloseImpl);
-const DialogOverlay = withPluginUI("dialogOverlay", DialogOverlayImpl);
-const DialogContent = withPluginUI("dialogContent", DialogContentImpl);
-const DialogHeader = withPluginUI("dialogHeader", DialogHeaderImpl);
-const DialogFooter = withPluginUI("dialogFooter", DialogFooterImpl);
-const DialogTitle = withPluginUI("dialogTitle", DialogTitleImpl);
-const DialogDescription = withPluginUI("dialogDescription", DialogDescriptionImpl);
+const Dialog = DialogImpl;
+const DialogTrigger = DialogTriggerImpl;
+const DialogPortal = DialogPortalImpl;
+const DialogClose = DialogCloseImpl;
+const DialogOverlay = DialogOverlayImpl;
+const DialogContent = DialogContentImpl;
+const DialogHeader = DialogHeaderImpl;
+const DialogFooter = DialogFooterImpl;
+const DialogTitle = DialogTitleImpl;
+const DialogDescription = DialogDescriptionImpl;
 
 export {
     Dialog,

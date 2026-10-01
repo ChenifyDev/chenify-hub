@@ -2,7 +2,6 @@
 import { Dialog as SheetPrimitive } from "@base-ui/react/dialog";
 
 import { cn } from "@/lib/utils";
-import { withPluginUI } from "@/plugins/api";
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
 
@@ -100,14 +99,14 @@ function SheetDescriptionImpl({ className, ...props }: SheetPrimitive.Descriptio
     );
 }
 
-const Sheet = withPluginUI("sheet", SheetImpl);
-const SheetTrigger = withPluginUI("sheetTrigger", SheetTriggerImpl);
-const SheetClose = withPluginUI("sheetClose", SheetCloseImpl);
-const SheetContent = withPluginUI("sheetContent", SheetContentImpl);
-const SheetHeader = withPluginUI("sheetHeader", SheetHeaderImpl);
-const SheetFooter = withPluginUI("sheetFooter", SheetFooterImpl);
-const SheetTitle = withPluginUI("sheetTitle", SheetTitleImpl);
-const SheetDescription = withPluginUI("sheetDescription", SheetDescriptionImpl);
+const Sheet = SheetImpl;
+const SheetTrigger = SheetTriggerImpl;
+const SheetClose = SheetCloseImpl;
+const SheetContent = SheetContentImpl;
+const SheetHeader = SheetHeaderImpl;
+const SheetFooter = SheetFooterImpl;
+const SheetTitle = SheetTitleImpl;
+const SheetDescription = SheetDescriptionImpl;
 
 export {
     Sheet,

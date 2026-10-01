@@ -6,7 +6,7 @@ import router from "@/router";
 import AuthBootstrap from "@/components/AuthBootstrap.tsx";
 import { ThemeProvider } from "@/components/layout/ThemeProvider.tsx";
 import { Toaster } from "@/components/ui/sonner.tsx";
-import PluginRuntime from "@/plugins/runtime.tsx";
+import PluginRuntime from "@/plugins/runtime.ts";
 
 createRoot(document.getElementById("root")!).render(
     <StrictMode>

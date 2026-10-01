@@ -17,19 +17,16 @@ workspace/
 npm i -D typescript @types/react
 ```
 
-这样就能开始写了：`card*` `input` `label` `skeleton` `dropdownMenuShortcut`
-`dialogHeader/Footer` `sheetHeader/Footer` 这些纯 DOM 的插槽立刻是字段级精确的。
+这样就能开始写了：`card*` `input` `label` `skeleton` `separator`
+这些纯 DOM 的插槽立刻是字段级精确的。
 
-其余插槽（`button` `badge` `checkbox` `separator` `tabs*` `dialog*`
-`sheet*` `dropdownMenu*` `tooltip*`）的 props 来自 Base UI 原语。**不装
+其余插槽（`button` `badge` `checkbox` `tabs*`）的 props 来自 Base UI 原语。**不装
 `@base-ui/react` 也能编** —— 那部分 props 退化成 `any`，不报错、也不校验。
 想要字段级类型，就按站点的版本补上这几个包：
 
 ```bash
-npm i -D @base-ui/react class-variance-authority lucide-react
+npm i -D @base-ui/react class-variance-authority
 ```
-
-`lucide-react` 只在用图标时需要，版本对着站点 `package.json` 抄。
 
 ## 怎么用
 

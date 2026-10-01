@@ -1,2 +1,2 @@
-declare const Separator: import("react").ComponentType<import("@base-ui/react").SeparatorProps>;
+declare const Separator: import("react").ComponentType<import("@base-ui/react/separator").SeparatorProps>;
 export { Separator };
