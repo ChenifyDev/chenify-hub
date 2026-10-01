@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Clock, Flame, Signpost } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 import PostCard from "@/components/forum/PostCard.tsx";
 import LoadMore from "@/components/tab/LoadMore.tsx";
@@ -40,9 +41,19 @@ function Feed({ sort, tag }: { sort: Sort; tag: string | null }) {
 }
 
 export default function Posts() {
-    const [sort, setSort] = useState<Sort>("hot");
-    const [tag, setTag] = useState<string | null>(null);
+    const [params, setParams] = useSearchParams();
+    const sort: Sort = params.get("sort") === "latest" ? "latest" : "hot";
+    const tag = params.get("tag");
     const [tags, setTags] = useState<string[]>([]);
+
+    const patch = (key: "sort" | "tag", value: string | null) => {
+        setParams((prev) => {
+            const next = new URLSearchParams(prev);
+            if (!value || (key === "sort" && value === "hot")) next.delete(key);
+            else next.set(key, value);
+            return next;
+        });
+    };
 
     useEffect(() => {
         listTags()
@@ -61,11 +72,15 @@ export default function Posts() {
             </header>
 
             <div className="mb-3 flex items-center gap-2">
-                <Button size="sm" variant={sort === "hot" ? "default" : "outline"} onClick={() => setSort("hot")}>
+                <Button size="sm" variant={sort === "hot" ? "default" : "outline"} onClick={() => patch("sort", "hot")}>
                     <Flame />
                     热门
                 </Button>
-                <Button size="sm" variant={sort === "latest" ? "default" : "outline"} onClick={() => setSort("latest")}>
+                <Button
+                    size="sm"
+                    variant={sort === "latest" ? "default" : "outline"}
+                    onClick={() => patch("sort", "latest")}
+                >
                     <Clock />
                     最新
                 </Button>
@@ -78,7 +93,7 @@ export default function Posts() {
                             "rounded-md px-2 py-0.5 text-xs",
                             tag === null ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
                         )}
-                        onClick={() => setTag(null)}
+                        onClick={() => patch("tag", null)}
                     >
                         全部
                     </button>
@@ -89,8 +104,7 @@ export default function Posts() {
                                 "rounded-md px-2 py-0.5 text-xs",
                                 tag === t ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
                             )}
-                            // 再次点击当前标签即清除筛选（tag 置回 null）
-                            onClick={() => setTag(tag === t ? null : t)}
+                            onClick={() => patch("tag", tag === t ? null : t)}
                         >
                             #{t}
                         </button>
@@ -98,7 +112,6 @@ export default function Posts() {
                 </div>
             )}
 
-            {/* key 随 排序/标签 变化会整体重挂 Feed，从而重置分页（useInfiniteList 从头加载） */}
             <Feed key={`${sort}:${tag ?? ""}`} sort={sort} tag={tag} />
         </div>
     );

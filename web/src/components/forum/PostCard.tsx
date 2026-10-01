@@ -1,7 +1,7 @@
 import type React from "react";
 import { useMemo, useState } from "react";
 import { Bookmark, Check, ChevronDown, ChevronUp, Coins, Copy, Heart, MessageCircle, Pin, PinOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import Markdown from "@/components/forum/Markdown.tsx";
 import { UserAvatar } from "@/components/avatar.tsx";
@@ -29,8 +29,8 @@ export function PostCard({
     onPinChanged?: () => void;
 }) {
     const [expanded, setExpanded] = useState(false);
-    // 本地持有一个 post 快照：交互 hooks 会就地更新它，而不动父级列表的 prop
     const [postState, setPost] = useState<Post>(post);
+    const navigate = useNavigate();
     const { copied, copy } = useCopyLink();
     const { reactBusy, pinBusy, handleLike, handleFavorite, handleTip, handlePin } = usePostActions({
         post: postState,
@@ -40,7 +40,6 @@ export function PostCard({
     const { excerpt, isTruncated } = useMemo(() => truncateMarkdown(body, PREVIEW_MAX_LENGTH), [body]);
 
     const toggleExpanded = (e: React.MouseEvent) => {
-        // 卡片包在 <Link> 里：必须先阻止默认跳转和冒泡，再切换展开态
         e.preventDefault();
         e.stopPropagation();
         setExpanded((prev) => !prev);
@@ -104,9 +103,13 @@ export function PostCard({
                 {postState.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
                         {postState.tags.map((tag) => (
-                            <span key={tag} className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                            <Link
+                                key={tag}
+                                to={`/explore-posts?tag=${encodeURIComponent(tag)}`}
+                                className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground hover:bg-primary hover:text-primary-foreground"
+                            >
                                 #{tag}
-                            </span>
+                            </Link>
                         ))}
                     </div>
                 )}
@@ -140,10 +143,14 @@ export function PostCard({
                         className="inline-flex items-center gap-1 text-amber-500"
                     >
                         <Coins className="size-3.5" />
-                        {/* coins_count 按 0.1 枚存储，*10 换算为整枚 */}
                         {postState.coins_count * 10}
                     </Button>
-                    <Button variant="ghost" size={"xs"} disabled className="inline-flex items-center gap-1">
+                    <Button
+                        variant="ghost"
+                        size={"xs"}
+                        className="inline-flex items-center gap-1"
+                        onClick={() => navigate(`/posts/${postState.id}#comments`)}
+                    >
                         <MessageCircle className="size-3.5" />
                         {postState.comments_count}
                     </Button>
@@ -163,8 +170,7 @@ export function PostCard({
                         variant="ghost"
                         size="sm"
                         className="ml-auto text-muted-foreground"
-                        // 用 host + 路径拼链接，避免带协议前缀的写法在公共页与域名不一致
-                        onClick={() => void copy(window.location.host + `/posts/${postState.id}`)}
+                        onClick={() => void copy(`${window.location.host}/posts/${postState.id}`)}
                     >
                         {copied ? <Check /> : <Copy />}
                         {copied ? "已复制" : "复制链接"}

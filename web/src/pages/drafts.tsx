@@ -1,12 +1,7 @@
 import { FileText } from "lucide-react";
-import { useUserStore } from "@/stores/useUser.ts";
 import PostDraftList from "@/components/forum/drafts/DraftList.tsx";
 
 export default function Drafts() {
-    const me = useUserStore((s) => s.user);
-
-    if (!me) return null;
-
     return (
         <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
             <header className="mb-4">

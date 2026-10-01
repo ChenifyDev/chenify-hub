@@ -14,11 +14,12 @@ import {
     Signpost,
     SquarePen,
 } from "lucide-react";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
-import { clearToken, getCheckinStatus, getUnreadNotifications, logout } from "@/lib/api";
+import { clearToken, getCheckinStatus, logout } from "@/lib/api";
 import { useUserStore } from "@/stores/useUser.ts";
 import { useCoinsStore } from "@/stores/useCoins.ts";
+import { useUnreadStore } from "@/stores/useUnread.ts";
 import { UserAvatar } from "@/components/avatar.tsx";
 import SearchBox from "@/components/search/SearchBox.tsx";
 import {
@@ -56,9 +57,9 @@ export default function AppSidebar() {
     const setBalance = useCoinsStore((s) => s.setBalance);
     const navigate = useNavigate();
     const loginLink = useLoginLink();
-    const location = useLocation();
+    const unread = useUnreadStore((s) => s.count);
+    const refreshUnread = useUnreadStore((s) => s.refresh);
     const [keyword, setKeyword] = useState("");
-    const [unread, setUnread] = useState(0);
     const { state, toggleSidebar } = useSidebar();
     const isCollapsed = state === "collapsed";
 
@@ -66,10 +67,7 @@ export default function AppSidebar() {
         if (!user) return;
         let cancelled = false;
         const refresh = async () => {
-            try {
-                const { count } = await getUnreadNotifications();
-                if (!cancelled) setUnread(count);
-            } catch {}
+            if (!cancelled) await refreshUnread();
             try {
                 const status = await getCheckinStatus();
                 if (!cancelled) setCheckedToday(status.checked_today);
@@ -81,11 +79,7 @@ export default function AppSidebar() {
             cancelled = true;
             clearInterval(timer);
         };
-    }, [user, setCheckedToday]);
-
-    useEffect(() => {
-        if (location.pathname === "/notifications") setUnread(0);
-    }, [location.pathname]);
+    }, [user, setCheckedToday, refreshUnread]);
 
     const handleLogout = async () => {
         await logout().catch(() => {});
@@ -94,7 +88,7 @@ export default function AppSidebar() {
         setUser(null);
         setBalance(null);
         setCheckedToday(null);
-        setUnread(0);
+        useUnreadStore.getState().set(0);
         navigate("/login", { replace: true });
     };
 

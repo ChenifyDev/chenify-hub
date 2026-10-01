@@ -31,7 +31,6 @@ export default function SearchPage() {
         });
     };
 
-    // 搜索状态全部放在 URL（q/type/sort），key 变化触发 tab 重挂载 → 列表分页重置
     const tabKey = `${keyword}:${type}:${sort}`;
 
     return (
@@ -41,7 +40,7 @@ export default function SearchPage() {
                     <Search className="size-5" />
                     搜索
                 </h1>
-                <p className="mt-1 text-sm text-muted-foreground">搜索社区里的帖子、作品和用户</p>
+                <p className="mt-1 text-sm text-muted-foreground">搜索社区里的帖子和用户</p>
             </header>
 
             <SearchBox value={input} onValueChange={setInput} onSubmit={(k) => updateParam("q", k)} className="mb-4" />

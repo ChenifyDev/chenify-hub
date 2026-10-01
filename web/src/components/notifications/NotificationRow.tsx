@@ -10,18 +10,19 @@ import { cn } from "@/lib/utils.ts";
 
 type NotificationRowProps = {
     notification: AppNotification;
-    read: boolean;
     link: { to: string; text: string } | null;
     onOpen: (notification: AppNotification) => void;
 };
 
-export function NotificationRow({ notification, read, link, onOpen }: NotificationRowProps) {
+export function NotificationRow({ notification, link, onOpen }: NotificationRowProps) {
+    const read = notification.is_read;
     return (
         <Card className={cn(!read && "border-primary/40 bg-primary/5")}>
             <CardContent
                 role="button"
                 tabIndex={0}
-                className={cn("flex items-start gap-3 p-3", !read && "font-medium")}
+                className={cn("flex cursor-pointer items-start gap-3 p-3", !read && "font-medium")}
+                onClick={() => void onOpen(notification)}
                 onKeyDown={(event) => {
                     if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
@@ -39,17 +40,7 @@ export function NotificationRow({ notification, read, link, onOpen }: Notificati
                         <span className="truncate">
                             <NotificationMessage notification={notification} />
                         </span>
-                        {link && (
-                            <Link
-                                to={link.to}
-                                onClick={() => {
-                                    if (!read) void onOpen(notification);
-                                }}
-                                className="mt-1 block truncate text-sm text-primary hover:underline"
-                            >
-                                {link.text}
-                            </Link>
-                        )}
+                        {link && <span className="mt-1 truncate text-primary">{link.text}</span>}
                     </div>
 
                     {notification.comment && (
@@ -57,9 +48,7 @@ export function NotificationRow({ notification, read, link, onOpen }: Notificati
                             {notification.comment}
                         </p>
                     )}
-                    <p className="mt-1 text-xs text-muted-foreground">
-                        {formatRelativeTime(notification.created_at)}
-                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">{formatRelativeTime(notification.created_at)}</p>
                 </div>
             </CardContent>
         </Card>

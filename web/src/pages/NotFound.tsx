@@ -2,14 +2,16 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button.tsx";
 
 export default function NotFound() {
-    const nav = useNavigate();
+    const navigate = useNavigate();
     return (
-        <div className="h-screen flex flex-col items-center justify-center">
-            <h1 className="text-8xl font-bold text-blue-500">404</h1>
-            <p className="text-slate-500 mt-3">页面未找到</p>
-            <div className="flex gap-3 mt-6">
-                <Button onClick={() => nav("/")}>回到首页</Button>
-                <Button onClick={() => nav(-1)}>返回上一页</Button>
+        <div className="flex min-h-svh flex-col items-center justify-center gap-2 p-4">
+            <h1 className="text-8xl font-bold text-primary">404</h1>
+            <p className="text-muted-foreground">页面未找到</p>
+            <div className="mt-4 flex gap-3">
+                <Button onClick={() => navigate("/explore-posts")}>回到社区</Button>
+                <Button variant="outline" onClick={() => navigate(-1)}>
+                    返回上一页
+                </Button>
             </div>
         </div>
     );

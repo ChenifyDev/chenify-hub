@@ -130,6 +130,12 @@ export default function PostDetail() {
         void loadCommentsFeed(true);
     }, [loadCommentsFeed, commentArea]);
 
+    useEffect(() => {
+        if (!loading && window.location.hash === "#comments") {
+            document.getElementById("comments")?.scrollIntoView({ block: "start" });
+        }
+    }, [loading]);
+
     const requireLogin = (): boolean => {
         if (!me) {
             navigate(loginLink);
@@ -294,7 +300,7 @@ export default function PostDetail() {
             <Separator className="my-5" />
 
             {commentArea ? (
-                <Card>
+                <Card id="comments">
                     <CardContent className="grid gap-4">
                         <div className="flex items-center gap-2 text-sm font-medium">
                             <MessageCircle />

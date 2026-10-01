@@ -96,7 +96,11 @@ function CommentRow<T extends BaseComment<T>>({
                         <CommentRow
                             key={reply.id}
                             comment={reply}
-                            parent={comment.replies.find((comment) => comment.id === reply.parent_id)}
+                            parent={
+                                reply.parent_id === comment.id
+                                    ? comment
+                                    : comment.replies.find((r) => r.id === reply.parent_id)
+                            }
                             onDelete={onDelete}
                             onLike={onLike}
                             onReply={onReply}

@@ -114,7 +114,7 @@ export type Paginated<T> = {
     hasMore: boolean;
 };
 
-export type NotificationType = "post_comment" | "post_reply" | "work_comment" | "work_reply" | "post_tip" | "user_tip";
+export type NotificationType = "post_comment" | "post_reply" | "post_tip" | "user_tip";
 
 export interface AppNotification {
     id: number;
@@ -123,7 +123,6 @@ export interface AppNotification {
     is_read: boolean;
     created_at: string;
     post_id: number | null;
-    work_id: number | null;
     comment_id: number | null;
     data: string | null;
     snippet: string;

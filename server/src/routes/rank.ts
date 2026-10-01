@@ -9,11 +9,10 @@ export const routes = {
         const { offset, limit } = parsePagination(url);
         const storage = getStorage();
         const users = await storage.rank.rankUsersByFollowers({ offset, limit }, me?.id);
-        const total = await storage.users.countUsers();
         return Response.json({
             items: users,
-            total,
-            hasMore: offset + users.length < total,
+            total: offset + users.length,
+            hasMore: users.length === limit,
             my_rank: me ? await storage.rank.getFollowerRank(me.id) : null,
             offset,
             limit,
@@ -25,11 +24,10 @@ export const routes = {
         const { offset, limit } = parsePagination(url);
         const storage = getStorage();
         const users = await storage.rank.rankUsersByPoints({ offset, limit }, me?.id);
-        const total = await storage.users.countUsers();
         return Response.json({
             items: users,
-            total,
-            hasMore: offset + users.length < total,
+            total: offset + users.length,
+            hasMore: users.length === limit,
             my_rank: me ? await storage.rank.getPointsRank(me.id) : null,
             offset,
             limit,
@@ -40,17 +38,13 @@ export const routes = {
         const me = await getAuthUser(req);
         const { offset, limit } = parsePagination(url);
         const period = url.searchParams.get("period");
-        const parsed =
-            period === "week" || period === "month" || period === "total"
-                ? period
-                : "week";
+        const parsed = period === "week" || period === "month" || period === "total" ? period : "week";
         const storage = getStorage();
         const items = await storage.coins.rankCoins({ period: parsed, offset, limit }, me?.id);
-        const total = await storage.users.countUsers();
         return Response.json({
             items,
-            total,
-            hasMore: offset + items.length < total,
+            total: offset + items.length,
+            hasMore: items.length === limit,
             my_rank: me ? await storage.coins.getCoinRank(me.id, parsed) : null,
             offset,
             limit,

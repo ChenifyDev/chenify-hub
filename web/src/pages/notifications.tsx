@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { Bell, CheckCheck, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -11,14 +11,15 @@ import { Button } from "@/components/ui/button.tsx";
 import { useInfiniteList } from "@/hooks/useInfiniteList.ts";
 import { listNotifications, markNotificationsRead, type AppNotification } from "@/lib/api";
 import { useUserStore } from "@/stores/useUser.ts";
+import { useUnreadStore } from "@/stores/useUnread.ts";
 
 const LIMIT = 20;
 
 export default function NotificationsPage() {
     const user = useUserStore((s) => s.user);
     const checking = useUserStore((s) => s.checking);
+    const unread = useUnreadStore((s) => s.count);
     const navigate = useNavigate();
-    const [marked, setMarked] = useState<number[]>([]);
 
     const feed = useInfiniteList<AppNotification>({
         fetcher: useCallback(async (offset, limit) => {
@@ -28,24 +29,28 @@ export default function NotificationsPage() {
         limit: LIMIT,
     });
 
+    useEffect(() => {
+        void useUnreadStore.getState().refresh();
+    }, []);
+
     const handleOpen = async (notification: AppNotification) => {
-        if (notification.is_read) {
-            if (notification.post_id) navigate(`/posts/${notification.post_id}`);
-            else if (notification.work_id) navigate(`/works/${notification.work_id}`);
-            return;
+        if (!notification.is_read) {
+            try {
+                await markNotificationsRead([notification.id]);
+                feed.setItems((items) =>
+                    items.map((item) => (item.id === notification.id ? { ...item, is_read: true } : item)),
+                );
+                useUnreadStore.getState().decrement();
+            } catch {}
         }
-        try {
-            await markNotificationsRead([notification.id]);
-            setMarked((ids) => (ids.includes(notification.id) ? ids : [...ids, notification.id]));
-        } catch {}
         if (notification.post_id) navigate(`/posts/${notification.post_id}`);
-        else if (notification.work_id) navigate(`/works/${notification.work_id}`);
     };
 
     const handleMarkAll = async () => {
         try {
             await markNotificationsRead();
             feed.setItems((items) => items.map((item) => ({ ...item, is_read: true })));
+            useUnreadStore.getState().set(0);
         } catch (err) {
             console.error(err);
         }
@@ -62,8 +67,6 @@ export default function NotificationsPage() {
     if (feed.loading) return <SkeletonList />;
     if (feed.error) return <Empty text={feed.error} />;
 
-    const unreadCount = feed.items.filter((item) => !item.is_read && !marked.includes(item.id)).length;
-
     return (
         <div className="mx-auto w-full p-4 md:p-6">
             <header className="mb-4 flex items-center justify-between">
@@ -71,10 +74,10 @@ export default function NotificationsPage() {
                     <Bell className="size-5" />
                     消息中心
                 </h1>
-                {unreadCount > 0 && (
+                {unread > 0 && (
                     <Button size="sm" variant="outline" onClick={() => void handleMarkAll()}>
                         <CheckCheck />
-                        全部已读 ({unreadCount})
+                        全部已读 ({unread})
                     </Button>
                 )}
             </header>
@@ -83,19 +86,14 @@ export default function NotificationsPage() {
                 <Empty text="暂无消息" />
             ) : (
                 <div className="grid gap-3">
-                    {feed.items.map((notification) => {
-                        const read = notification.is_read || marked.includes(notification.id);
-                        const link = notificationLink(notification);
-                        return (
-                            <NotificationRow
-                                key={notification.id}
-                                notification={notification}
-                                read={read}
-                                link={link}
-                                onOpen={handleOpen}
-                            />
-                        );
-                    })}
+                    {feed.items.map((notification) => (
+                        <NotificationRow
+                            key={notification.id}
+                            notification={notification}
+                            link={notificationLink(notification)}
+                            onOpen={handleOpen}
+                        />
+                    ))}
                     {feed.hasMore && <LoadMore loading={feed.loadingMore} onClick={() => void feed.load()} />}
                 </div>
             )}
