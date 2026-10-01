@@ -1,0 +1,15 @@
+{
+    "installCommand": "bun install",
+    "buildCommand": "bun run build",
+    "outputDirectory": "web/dist",
+    "rewrites": [
+        {
+            "source": "/api/(.*)",
+            "destination": "https://hubapi.chenify.top/api/$1"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
+}

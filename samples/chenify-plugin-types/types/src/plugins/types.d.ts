@@ -104,4 +104,3 @@ export declare function manifestSlotEntries(manifest: PluginManifest): [PluginSl
 export declare const SCRIPT_EXTENSIONS: readonly [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"];
 export declare function isTextPath(path: string): boolean;
 export declare function isScriptPath(path: string): boolean;
-export {};

@@ -29,4 +29,3 @@ type PluginState = {
     move: (id: string, direction: -1 | 1) => Promise<void>;
 };
 export declare const usePluginStore: import("zustand").UseBoundStore<import("zustand").StoreApi<PluginState>>;
-export {};
