@@ -1,41 +1,45 @@
 import { useCallback, useEffect, useState } from "react";
 
-const KEYS = {
-    content: "tmp_content",
-    title: "tmp_title",
-    commentArea: "tmp_comment_area",
-    tag: "tmp_tag",
-};
+const DRAFT_PREFIX = "draft:";
 
-/**
- * 写帖页的草稿自动保存：把内容/标题/评论开关/标签防抖（800ms）写入 localStorage，
- * 页面刷新后可恢复。clear() 在草稿保存或发布成功后清空临时缓存。
- *
- * localStorage 只能存字符串，故布尔值 commentArea 序列化为 "1"/"false"，
- * 读取时用 `!== "false"` 反解（旧数据缺失时默认为 true/允许评论）。
- */
-export function useDraftPersistence() {
-    const [content, setContent] = useState(() => localStorage.getItem(KEYS.content) || "");
-    const [title, setTitle] = useState(() => localStorage.getItem(KEYS.title) || "");
-    const [commentArea, setCommentArea] = useState(() => localStorage.getItem(KEYS.commentArea) !== "false");
-    const [tagInput, setTagInput] = useState(() => localStorage.getItem(KEYS.tag) || "");
+const keys = (scope: string) => ({
+    content: `${DRAFT_PREFIX}${scope}:content`,
+    title: `${DRAFT_PREFIX}${scope}:title`,
+    commentArea: `${DRAFT_PREFIX}${scope}:comment-area`,
+    tag: `${DRAFT_PREFIX}${scope}:tag`,
+});
+
+export function clearAllDrafts(): void {
+    for (const key of Object.keys(localStorage)) {
+        if (key.startsWith(DRAFT_PREFIX)) localStorage.removeItem(key);
+    }
+}
+
+export function useDraftPersistence(id: string | null) {
+    const scope = id ?? "new";
+    const [content, setContent] = useState(() => localStorage.getItem(keys(scope).content) ?? "");
+    const [title, setTitle] = useState(() => localStorage.getItem(keys(scope).title) ?? "");
+    const [commentArea, setCommentArea] = useState(() => localStorage.getItem(keys(scope).commentArea) !== "false");
+    const [tagInput, setTagInput] = useState(() => localStorage.getItem(keys(scope).tag) ?? "");
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            localStorage.setItem(KEYS.content, content);
-            localStorage.setItem(KEYS.title, title);
-            localStorage.setItem(KEYS.commentArea, commentArea ? "1" : "false");
-            localStorage.setItem(KEYS.tag, tagInput);
+            const current = keys(scope);
+            localStorage.setItem(current.content, content);
+            localStorage.setItem(current.title, title);
+            localStorage.setItem(current.commentArea, commentArea ? "1" : "false");
+            localStorage.setItem(current.tag, tagInput);
         }, 800);
         return () => clearTimeout(timer);
-    }, [content, title, tagInput, commentArea]);
+    }, [content, title, tagInput, commentArea, scope]);
 
     const clear = useCallback(() => {
-        localStorage.removeItem(KEYS.content);
-        localStorage.removeItem(KEYS.title);
-        localStorage.removeItem(KEYS.commentArea);
-        localStorage.removeItem(KEYS.tag);
-    }, []);
+        const current = keys(scope);
+        localStorage.removeItem(current.content);
+        localStorage.removeItem(current.title);
+        localStorage.removeItem(current.commentArea);
+        localStorage.removeItem(current.tag);
+    }, [scope]);
 
     return { content, setContent, title, setTitle, commentArea, setCommentArea, tagInput, setTagInput, clear };
 }

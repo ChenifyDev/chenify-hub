@@ -1,6 +1,5 @@
 import { type ChangeEvent, useState, type SubmitEventHandler } from "react";
 import { ImagePlus, Loader2, Settings, X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar.tsx";
 import { Button } from "@/components/ui/button.tsx";
@@ -16,11 +15,8 @@ import { type FormStatus, StatusMessage } from "@/components/StatusMessage.tsx";
 
 export default function SettingsPage() {
     const { user, checking, setUser } = useUserStore();
-    const navigate = useNavigate();
 
     const [username, setUsername] = useState(user?.username ?? "");
-    // removeAvatar 标记"移除为默认头像"：它与"新选文件预览"互斥，
-    // 提交时 avatar=undefined + removeAvatar=true 表示还原默认。
     const [removeAvatar, setRemoveAvatar] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [status, setStatus] = useState<FormStatus>(null);
@@ -56,10 +52,7 @@ export default function SettingsPage() {
             </div>
         );
     }
-    if (!user) {
-        navigate("/login");
-        return null;
-    }
+    if (!user) return null;
 
     const handleSubmit: SubmitEventHandler<HTMLFormElement> = async (event) => {
         event.preventDefault();
@@ -104,7 +97,6 @@ export default function SettingsPage() {
         removeBg();
     };
 
-    // 三种展示状态：新选文件预览 > 当前头像 > 移除后的空占位
     const showCurrent = !!user.avatar && !preview && !removeAvatar;
 
     return (

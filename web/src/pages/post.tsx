@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { MessageCircle } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useLoginLink } from "@/hooks/useLoginLink.ts";
 
 import CommentInput from "@/components/comments/CommentInput.tsx";
 import CommentList from "@/components/comments/CommentList.tsx";
@@ -40,6 +41,7 @@ export default function PostDetail() {
     const id = Number(idParam);
     const me = useUserStore((s) => s.user);
     const navigate = useNavigate();
+    const loginLink = useLoginLink();
 
     const [post, setPost] = useState<Post | null>(null);
     const [loading, setLoading] = useState(true);
@@ -53,13 +55,19 @@ export default function PostDetail() {
     const [commentArea, setCommentArea] = useState(true);
     const [commentAreaBusy, setCommentAreaBusy] = useState(false);
 
-    // usePostActions/useFollow 用函数式 setState 合并结果；包一层以规避 post 为 null 时的空值
     const setPostMerge = useCallback(
         (updater: (prev: Post) => Post) => setPost((prev) => (prev ? updater(prev) : prev)),
         [],
     );
 
-    const { reactBusy, pinBusy, handleLike, handleFavorite, handleTip, handlePin: handleTogglePin } = usePostActions({
+    const {
+        reactBusy,
+        pinBusy,
+        handleLike,
+        handleFavorite,
+        handleTip,
+        handlePin: handleTogglePin,
+    } = usePostActions({
         post,
         setPost: setPostMerge,
     });
@@ -74,7 +82,6 @@ export default function PostDetail() {
         onToggle: (res) => setPostMerge((prev) => ({ ...prev, is_following_author: res.following })),
     });
 
-    // 评论列表不走 autoStart，由下方 effect 在"允许评论"时才首次加载
     const commentsFeed = useInfiniteList<Comment>({
         fetcher: useCallback(
             async (offset) => {
@@ -102,12 +109,9 @@ export default function PostDetail() {
                 setCommentArea(parseFrontmatter(data.content).commentArea);
                 if (me?.id === data.author.id) {
                     try {
-                        // 作者草稿 id 只为开启顶部"编辑"按钮，未发表时也可进入写帖页
                         const draft = await getPostDraft(id);
                         if (!cancelled) setDraftId(draft.id);
-                    } catch {
-                        /* ignore */
-                    }
+                    } catch {}
                 }
             })
             .catch((err) => {
@@ -121,7 +125,6 @@ export default function PostDetail() {
         };
     }, [id, me?.id]);
 
-    // 评论区开关变化时按需（重新）加载评论
     useEffect(() => {
         if (!commentArea) return;
         void loadCommentsFeed(true);
@@ -129,7 +132,7 @@ export default function PostDetail() {
 
     const requireLogin = (): boolean => {
         if (!me) {
-            navigate("/login");
+            navigate(loginLink);
             return false;
         }
         return true;
@@ -139,7 +142,6 @@ export default function PostDetail() {
         if (!post) return;
         setCommentAreaBusy(true);
         try {
-            // 评论开关存于正文 frontmatter 的 commentArea 字段，服务端更新后回读解析
             const updated = await setPostCommentArea(post.id, !commentArea);
             setPost(updated);
             setCommentArea(parseFrontmatter(updated.content).commentArea);
@@ -156,7 +158,6 @@ export default function PostDetail() {
         setSending(true);
         try {
             const comment = await createComment(post.id, draft.trim(), replyTo?.id ?? null);
-            // 回复插入到父评论的 replies 下；普通评论置于列表顶部
             if (replyTo) {
                 commentsFeed.setItems((prev) => insertReply(prev, comment));
             } else {
@@ -187,8 +188,6 @@ export default function PostDetail() {
     const handleDeleteComment = async (commentId: number) => {
         try {
             await deleteComment(commentId);
-            // 删除评论时其 replies 也一并删除：先把两层扁平化统计实际移除条数，
-            // 再同步递减帖子的 comments_count（clamp 到 0）
             const flat = comments.flatMap((c) => [c, ...c.replies]);
             const removedCount = flat.filter((c) => c.id === commentId || c.parent_id === commentId).length;
             commentsFeed.setItems((prev) =>

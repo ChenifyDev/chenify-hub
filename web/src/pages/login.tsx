@@ -14,24 +14,15 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload.ts";
 import { type FormStatus, StatusMessage } from "@/components/StatusMessage.tsx";
 
-// OAuth 授权跳转的"安全返回地址"白名单：仅允许跳回本站同源且指向 /oauth/authorize 的地址，
-// 防止第三方页面借登录成功后的跳转做钓鱼。
 function getSafeReturnTo(raw: string | null): string | null {
     if (!raw) return null;
     try {
-        const url = new URL(raw, window.location.href);
+        const url = new URL(raw, window.location.origin);
         const apiBase = (import.meta.env.VITE_API_PATH as string | undefined) ?? "";
-        const allowedOrigins = new Set<string>([window.location.origin]);
-        if (apiBase) {
-            try {
-                allowedOrigins.add(new URL(apiBase).origin);
-            } catch {
-                // ignore invalid VITE_API_PATH
-            }
+        if (apiBase && url.origin === new URL(apiBase).origin && url.pathname === "/oauth/authorize") {
+            return url.toString();
         }
-        if (!allowedOrigins.has(url.origin)) return null;
-        if (url.pathname !== "/oauth/authorize") return null;
-        return url.toString();
+        return url.origin === window.location.origin ? `${url.pathname}${url.search}${url.hash}` : null;
     } catch {
         return null;
     }
@@ -71,11 +62,9 @@ function LoginForm({ returnTo, onSuccess }: { returnTo: string | null; onSuccess
             setStatus({ type: "success", text: `欢迎回来，${user.username}` });
             void useCoinsStore.getState().fetchBalance();
             onSuccess(user);
-            if (returnTo) {
-                window.location.href = returnTo;
-            } else {
-                navigate("/");
-            }
+            if (!returnTo) navigate("/");
+            else if (returnTo.startsWith("/")) navigate(returnTo);
+            else window.location.href = returnTo;
         } catch (err) {
             setStatus({ type: "error", text: err instanceof Error ? err.message : "登录失败" });
         } finally {

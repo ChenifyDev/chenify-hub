@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 
-import { clearToken, getCheckinStatus, getUnreadNotifications } from "@/lib/api";
+import { clearToken, getCheckinStatus, getUnreadNotifications, logout } from "@/lib/api";
 import { useUserStore } from "@/stores/useUser.ts";
 import { useCoinsStore } from "@/stores/useCoins.ts";
 import { UserAvatar } from "@/components/avatar.tsx";
@@ -36,6 +36,8 @@ import {
     useSidebar,
 } from "@/components/ui/sidebar.tsx";
 import { cn } from "@/lib/utils.ts";
+import { clearAllDrafts } from "@/hooks/useDraftPersistence.ts";
+import { useLoginLink } from "@/hooks/useLoginLink.ts";
 import { ModeToggle } from "@/components/layout/ModeToggle.tsx";
 import {
     DropdownMenu,
@@ -51,14 +53,15 @@ export default function AppSidebar() {
     const balance = useCoinsStore((s) => s.balance);
     const checkedToday = useCoinsStore((s) => s.checkedToday);
     const setCheckedToday = useCoinsStore((s) => s.setCheckedToday);
+    const setBalance = useCoinsStore((s) => s.setBalance);
     const navigate = useNavigate();
+    const loginLink = useLoginLink();
     const location = useLocation();
     const [keyword, setKeyword] = useState("");
     const [unread, setUnread] = useState(0);
     const { state, toggleSidebar } = useSidebar();
     const isCollapsed = state === "collapsed";
 
-    // 兜底轮询：未读消息数 + 今日签到状态，每隔 30s 刷新一次（进入消息页时再置零角标）
     useEffect(() => {
         if (!user) return;
         let cancelled = false;
@@ -66,15 +69,11 @@ export default function AppSidebar() {
             try {
                 const { count } = await getUnreadNotifications();
                 if (!cancelled) setUnread(count);
-            } catch {
-                // 忽略轮询失败
-            }
+            } catch {}
             try {
                 const status = await getCheckinStatus();
                 if (!cancelled) setCheckedToday(status.checked_today);
-            } catch {
-                // 忽略轮询失败
-            }
+            } catch {}
         };
         void refresh();
         const timer = setInterval(refresh, 30_000);
@@ -84,15 +83,19 @@ export default function AppSidebar() {
         };
     }, [user, setCheckedToday]);
 
-    // 进入消息页后立即清掉角标，配合上方轮询下次再拉取真实未读数
     useEffect(() => {
         if (location.pathname === "/notifications") setUnread(0);
     }, [location.pathname]);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        await logout().catch(() => {});
         clearToken();
+        clearAllDrafts();
         setUser(null);
-        navigate("/login");
+        setBalance(null);
+        setCheckedToday(null);
+        setUnread(0);
+        navigate("/login", { replace: true });
     };
 
     const handleSearch = (keyword: string) => {
@@ -304,7 +307,7 @@ export default function AppSidebar() {
                     ) : (
                         <SidebarMenuButton
                             className="h-8 w-8 justify-center px-0 group-data-[collapsible=icon]:hidden"
-                            onClick={() => navigate("/login")}
+                            onClick={() => navigate(loginLink)}
                         >
                             <LogOut className={"size-4"} />
                         </SidebarMenuButton>

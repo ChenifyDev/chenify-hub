@@ -1,5 +1,6 @@
 import { useUserStore } from "@/stores/useUser.ts";
 import { Link, useNavigate } from "react-router-dom";
+import { useLoginLink } from "@/hooks/useLoginLink.ts";
 import { type ReactNode, useState } from "react";
 import { toggleFollow } from "@/lib/api";
 import { UserAvatar } from "@/components/avatar.tsx";
@@ -24,12 +25,13 @@ export default function UserRow<T extends RowUser>({
 }) {
     const me = useUserStore((s) => s.user);
     const navigate = useNavigate();
+    const loginLink = useLoginLink();
     const [busy, setBusy] = useState(false);
     const isSelf = me?.id === user.id;
 
     const handleFollow = async () => {
         if (!me) {
-            navigate("/login");
+            navigate(loginLink);
             return;
         }
         setBusy(true);

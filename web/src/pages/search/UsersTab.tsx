@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useLoginLink } from "@/hooks/useLoginLink.ts";
 
 import { UserAvatar } from "@/components/avatar.tsx";
 import { type FollowUser, searchUsers } from "@/lib/api";
@@ -17,10 +18,9 @@ import { useFollow } from "@/hooks/useFollow.ts";
 
 const LIMIT = 10;
 
-// 每行是一个独立子组件：由于列表里有多行用户，关注状态/忙碌标志必须按行隔离，
-// 不能让一个组件实例持有多行共享的 busy。
 function SearchUserRow({ user, onChanged }: { user: FollowUser; onChanged: (updated: FollowUser) => void }) {
     const navigate = useNavigate();
+    const loginLink = useLoginLink();
     const me = useUserStore((s) => s.user);
     const { busy, toggle } = useFollow({
         userId: user.id,
@@ -31,7 +31,7 @@ function SearchUserRow({ user, onChanged }: { user: FollowUser; onChanged: (upda
 
     const handleToggle = () => {
         if (!me) {
-            navigate("/login");
+            navigate(loginLink);
             return;
         }
         void toggle();

@@ -13,9 +13,7 @@ interface RateLimitOptions {
 }
 
 const DEFAULT_KEY = (c: Context): string => {
-    return c.req.header("x-forwarded-for")?.split(",")[0]?.trim()
-        ?? c.req.header("x-real-ip")
-        ?? "unknown";
+    return c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ?? c.req.header("x-real-ip") ?? "unknown";
 };
 
 export function createRateLimit(options: RateLimitOptions): MiddlewareHandler {
@@ -53,7 +51,7 @@ export function createRateLimit(options: RateLimitOptions): MiddlewareHandler {
 
         if (entry.count > max) {
             c.header("Retry-After", String(retryAfter));
-            return c.json({ error: message, retryAfter }, 429);
+            return c.json({ message, retryAfter }, 429);
         }
 
         await next();

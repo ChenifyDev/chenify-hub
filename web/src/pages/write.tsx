@@ -15,13 +15,11 @@ import { createDraft, updateDraft, publishDraft, type Draft, getDraft } from "@/
 import { parseFrontmatter, withTitle } from "@/lib/frontmatter.ts";
 import { splitTags } from "@/lib/tags.ts";
 import { urlToFile } from "@/lib/utils.ts";
-import { useUserStore } from "@/stores/useUser.ts";
 
 const MAX_IMAGES = 9;
 const MAX_CONTENT_LENGTH = 20000;
 
 export default function Write() {
-    const me = useUserStore((s) => s.user);
     const navigate = useNavigate();
     const [searchParams, _] = useSearchParams();
     const currentId = searchParams.get("id");
@@ -33,34 +31,35 @@ export default function Write() {
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [dirty, setDirty] = useState(false);
-    // 保存逻辑的"最新引用"：始终由下方 effect 同步为最新的 handleSaveDraft，
-    // 便于在任意时刻（如侧边栏/定时器）触发保存时拿到当前闭包。
     const saveDraftRef = useRef<() => Promise<void>>(async () => {});
     const { content, setContent, title, setTitle, commentArea, setCommentArea, tagInput, setTagInput, clear } =
-        useDraftPersistence();
+        useDraftPersistence(currentId);
 
-    // 加载已有草稿
     useEffect(() => {
         let ignore = false;
         const func = async () => {
             if (!currentId) return;
-            const data = await getDraft(Number(currentId));
-            const { title: draftTitle, commentArea: draftCommentArea, body } = parseFrontmatter(data.content);
-            setTitle(draftTitle ?? "");
-            setCommentArea(draftCommentArea);
-            setContent(body);
-            setTagInput(data.tags.join(" "));
-            setStatus(data.status);
-            const imageUrls = data.images;
-            const imgs: File[] = [];
-            // 把草稿里已上传的图片 URL 重新拉成 File，回显进编辑器以便再次提交
-            for (const url of imageUrls) {
-                const file = await urlToFile(url);
-                if (!file) continue;
-                imgs.push(file);
+            try {
+                const data = await getDraft(Number(currentId));
+                const { title: draftTitle, commentArea: draftCommentArea, body } = parseFrontmatter(data.content);
+                if (ignore) return;
+                setTitle(draftTitle ?? "");
+                setCommentArea(draftCommentArea);
+                setContent(body);
+                setTagInput(data.tags.join(" "));
+                setStatus(data.status);
+                const imgs: File[] = [];
+                for (const url of data.images) {
+                    const file = await urlToFile(url);
+                    if (!file) continue;
+                    imgs.push(file);
+                }
+                if (ignore) return;
+                setImageFiles(imgs);
+                setDirty(false);
+            } catch (err) {
+                if (!ignore) setError(err instanceof Error ? err.message : "草稿加载失败");
             }
-            setImageFiles(imgs);
-            setDirty(false); // 加载完毕，标记无未保存修改
         };
         if (!ignore) func().then();
         return () => {
@@ -68,7 +67,6 @@ export default function Write() {
         };
     }, [currentId, setTitle, setCommentArea, setContent, setTagInput, setImageFiles]);
 
-    // 浏览器刷新/关闭标签页警告
     useEffect(() => {
         const handler = (e: BeforeUnloadEvent) => {
             if (!dirty) return;
@@ -105,11 +103,6 @@ export default function Write() {
     useEffect(() => {
         saveDraftRef.current = handleSaveDraft;
     }, [handleSaveDraft]);
-
-    if (!me) {
-        navigate("/login");
-        return null;
-    }
 
     const handleContentChange = (v: string) => {
         setContent(v);
@@ -160,6 +153,7 @@ export default function Write() {
                 const draft = await createDraft(finalContent, imageFiles, tags);
                 const post = await publishDraft(draft.id);
                 setDirty(false);
+                clear();
                 navigate(`/posts/${post.id}`);
             }
         } catch (err) {

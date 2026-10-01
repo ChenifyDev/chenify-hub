@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 
 import NotFound from "../pages/NotFound";
 import App from "@/App.tsx";
+import RequireAuth from "@/components/RequireAuth.tsx";
 import Layout from "@/components/layout/Layout.tsx";
 import ExplorePosts from "@/pages/explore/posts.tsx";
 import Drafts from "@/pages/drafts.tsx";
@@ -22,7 +23,11 @@ const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <App />,
+                element: (
+                    <RequireAuth>
+                        <App />
+                    </RequireAuth>
+                ),
             },
             {
                 path: "login",
@@ -38,19 +43,35 @@ const router = createBrowserRouter([
             },
             {
                 path: "settings",
-                element: <SettingsPage />,
+                element: (
+                    <RequireAuth>
+                        <SettingsPage />
+                    </RequireAuth>
+                ),
             },
             {
                 path: "notifications",
-                element: <NotificationsPage />,
+                element: (
+                    <RequireAuth>
+                        <NotificationsPage />
+                    </RequireAuth>
+                ),
             },
             {
                 path: "drafts",
-                element: <Drafts />,
+                element: (
+                    <RequireAuth>
+                        <Drafts />
+                    </RequireAuth>
+                ),
             },
             {
                 path: "write",
-                element: <Write />,
+                element: (
+                    <RequireAuth>
+                        <Write />
+                    </RequireAuth>
+                ),
             },
             {
                 path: "users/:id",
@@ -66,10 +87,13 @@ const router = createBrowserRouter([
             },
             {
                 path: "checkin",
-                element: <CheckinPage />,
+                element: (
+                    <RequireAuth>
+                        <CheckinPage />
+                    </RequireAuth>
+                ),
             },
             {
-                // 插件只作用于本地浏览器，所以不需要登录
                 path: "plugins",
                 element: <PluginsPage />,
             },
