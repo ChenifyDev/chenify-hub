@@ -1,0 +1,474 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ChenifyHub UI 插件清单",
+    "type": "object",
+    "required": [
+        "id",
+        "name",
+        "ui"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+            "description": "唯一标识，只能是小写字母、数字与 . _ -，且以字母或数字开头，最长 64 位。重复安装视为更新。"
+        },
+        "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "展示名。"
+        },
+        "version": {
+            "type": "string",
+            "default": "0.0.0"
+        },
+        "author": {
+            "type": "string"
+        },
+        "description": {
+            "type": "string"
+        },
+        "ui": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "style": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "注入 <head> 的 CSS 文件路径，卸载时自动移除。"
+                },
+                "components": {
+                    "type": "object",
+                    "description": "插槽名 → 替换宿主组件的 .tsx 模块路径。ui.style 与 ui.components 至少要有一个。",
+                    "properties": {
+                        "button": {
+                            "type": "string",
+                            "default": "ui/button.tsx",
+                            "markdownDescription": "替换宿主的 `Button`（宿主文件 `button.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"button\">`。"
+                        },
+                        "card": {
+                            "type": "string",
+                            "default": "ui/card.tsx",
+                            "markdownDescription": "替换宿主的 `Card`（宿主文件 `card.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"card\">`。"
+                        },
+                        "cardHeader": {
+                            "type": "string",
+                            "default": "ui/cardHeader.tsx",
+                            "markdownDescription": "替换宿主的 `CardHeader`（宿主文件 `card.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"cardHeader\">`。"
+                        },
+                        "cardFooter": {
+                            "type": "string",
+                            "default": "ui/cardFooter.tsx",
+                            "markdownDescription": "替换宿主的 `CardFooter`（宿主文件 `card.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"cardFooter\">`。"
+                        },
+                        "cardTitle": {
+                            "type": "string",
+                            "default": "ui/cardTitle.tsx",
+                            "markdownDescription": "替换宿主的 `CardTitle`（宿主文件 `card.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"cardTitle\">`。"
+                        },
+                        "cardAction": {
+                            "type": "string",
+                            "default": "ui/cardAction.tsx",
+                            "markdownDescription": "替换宿主的 `CardAction`（宿主文件 `card.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"cardAction\">`。"
+                        },
+                        "cardDescription": {
+                            "type": "string",
+                            "default": "ui/cardDescription.tsx",
+                            "markdownDescription": "替换宿主的 `CardDescription`（宿主文件 `card.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"cardDescription\">`。"
+                        },
+                        "cardContent": {
+                            "type": "string",
+                            "default": "ui/cardContent.tsx",
+                            "markdownDescription": "替换宿主的 `CardContent`（宿主文件 `card.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"cardContent\">`。"
+                        },
+                        "badge": {
+                            "type": "string",
+                            "default": "ui/badge.tsx",
+                            "markdownDescription": "替换宿主的 `Badge`（宿主文件 `badge.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"badge\">`。"
+                        },
+                        "input": {
+                            "type": "string",
+                            "default": "ui/input.tsx",
+                            "markdownDescription": "替换宿主的 `Input`（宿主文件 `input.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"input\">`。"
+                        },
+                        "label": {
+                            "type": "string",
+                            "default": "ui/label.tsx",
+                            "markdownDescription": "替换宿主的 `Label`（宿主文件 `label.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"label\">`。"
+                        },
+                        "separator": {
+                            "type": "string",
+                            "default": "ui/separator.tsx",
+                            "markdownDescription": "替换宿主的 `Separator`（宿主文件 `separator.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"separator\">`。"
+                        },
+                        "skeleton": {
+                            "type": "string",
+                            "default": "ui/skeleton.tsx",
+                            "markdownDescription": "替换宿主的 `Skeleton`（宿主文件 `skeleton.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"skeleton\">`。"
+                        },
+                        "checkbox": {
+                            "type": "string",
+                            "default": "ui/checkbox.tsx",
+                            "markdownDescription": "替换宿主的 `Checkbox`（宿主文件 `checkbox.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"checkbox\">`。"
+                        },
+                        "tabs": {
+                            "type": "string",
+                            "default": "ui/tabs.tsx",
+                            "markdownDescription": "替换宿主的 `Tabs`（宿主文件 `tabs.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"tabs\">`。"
+                        },
+                        "tabsList": {
+                            "type": "string",
+                            "default": "ui/tabsList.tsx",
+                            "markdownDescription": "替换宿主的 `TabsList`（宿主文件 `tabs.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"tabsList\">`。"
+                        },
+                        "tabsTrigger": {
+                            "type": "string",
+                            "default": "ui/tabsTrigger.tsx",
+                            "markdownDescription": "替换宿主的 `TabsTrigger`（宿主文件 `tabs.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"tabsTrigger\">`。"
+                        },
+                        "tabsContent": {
+                            "type": "string",
+                            "default": "ui/tabsContent.tsx",
+                            "markdownDescription": "替换宿主的 `TabsContent`（宿主文件 `tabs.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"tabsContent\">`。"
+                        },
+                        "dialog": {
+                            "type": "string",
+                            "default": "ui/dialog.tsx",
+                            "markdownDescription": "替换宿主的 `Dialog`（宿主文件 `dialog.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dialog\">`。"
+                        },
+                        "dialogClose": {
+                            "type": "string",
+                            "default": "ui/dialogClose.tsx",
+                            "markdownDescription": "替换宿主的 `DialogClose`（宿主文件 `dialog.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dialogClose\">`。"
+                        },
+                        "dialogContent": {
+                            "type": "string",
+                            "default": "ui/dialogContent.tsx",
+                            "markdownDescription": "替换宿主的 `DialogContent`（宿主文件 `dialog.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dialogContent\">`。"
+                        },
+                        "dialogDescription": {
+                            "type": "string",
+                            "default": "ui/dialogDescription.tsx",
+                            "markdownDescription": "替换宿主的 `DialogDescription`（宿主文件 `dialog.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dialogDescription\">`。"
+                        },
+                        "dialogFooter": {
+                            "type": "string",
+                            "default": "ui/dialogFooter.tsx",
+                            "markdownDescription": "替换宿主的 `DialogFooter`（宿主文件 `dialog.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dialogFooter\">`。"
+                        },
+                        "dialogHeader": {
+                            "type": "string",
+                            "default": "ui/dialogHeader.tsx",
+                            "markdownDescription": "替换宿主的 `DialogHeader`（宿主文件 `dialog.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dialogHeader\">`。"
+                        },
+                        "dialogOverlay": {
+                            "type": "string",
+                            "default": "ui/dialogOverlay.tsx",
+                            "markdownDescription": "替换宿主的 `DialogOverlay`（宿主文件 `dialog.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dialogOverlay\">`。"
+                        },
+                        "dialogPortal": {
+                            "type": "string",
+                            "default": "ui/dialogPortal.tsx",
+                            "markdownDescription": "替换宿主的 `DialogPortal`（宿主文件 `dialog.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dialogPortal\">`。"
+                        },
+                        "dialogTitle": {
+                            "type": "string",
+                            "default": "ui/dialogTitle.tsx",
+                            "markdownDescription": "替换宿主的 `DialogTitle`（宿主文件 `dialog.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dialogTitle\">`。"
+                        },
+                        "dialogTrigger": {
+                            "type": "string",
+                            "default": "ui/dialogTrigger.tsx",
+                            "markdownDescription": "替换宿主的 `DialogTrigger`（宿主文件 `dialog.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dialogTrigger\">`。"
+                        },
+                        "sheet": {
+                            "type": "string",
+                            "default": "ui/sheet.tsx",
+                            "markdownDescription": "替换宿主的 `Sheet`（宿主文件 `sheet.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"sheet\">`。"
+                        },
+                        "sheetTrigger": {
+                            "type": "string",
+                            "default": "ui/sheetTrigger.tsx",
+                            "markdownDescription": "替换宿主的 `SheetTrigger`（宿主文件 `sheet.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"sheetTrigger\">`。"
+                        },
+                        "sheetClose": {
+                            "type": "string",
+                            "default": "ui/sheetClose.tsx",
+                            "markdownDescription": "替换宿主的 `SheetClose`（宿主文件 `sheet.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"sheetClose\">`。"
+                        },
+                        "sheetContent": {
+                            "type": "string",
+                            "default": "ui/sheetContent.tsx",
+                            "markdownDescription": "替换宿主的 `SheetContent`（宿主文件 `sheet.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"sheetContent\">`。"
+                        },
+                        "sheetHeader": {
+                            "type": "string",
+                            "default": "ui/sheetHeader.tsx",
+                            "markdownDescription": "替换宿主的 `SheetHeader`（宿主文件 `sheet.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"sheetHeader\">`。"
+                        },
+                        "sheetFooter": {
+                            "type": "string",
+                            "default": "ui/sheetFooter.tsx",
+                            "markdownDescription": "替换宿主的 `SheetFooter`（宿主文件 `sheet.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"sheetFooter\">`。"
+                        },
+                        "sheetTitle": {
+                            "type": "string",
+                            "default": "ui/sheetTitle.tsx",
+                            "markdownDescription": "替换宿主的 `SheetTitle`（宿主文件 `sheet.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"sheetTitle\">`。"
+                        },
+                        "sheetDescription": {
+                            "type": "string",
+                            "default": "ui/sheetDescription.tsx",
+                            "markdownDescription": "替换宿主的 `SheetDescription`（宿主文件 `sheet.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"sheetDescription\">`。"
+                        },
+                        "dropdownMenu": {
+                            "type": "string",
+                            "default": "ui/dropdownMenu.tsx",
+                            "markdownDescription": "替换宿主的 `DropdownMenu`（宿主文件 `dropdown-menu.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dropdownMenu\">`。"
+                        },
+                        "dropdownMenuPortal": {
+                            "type": "string",
+                            "default": "ui/dropdownMenuPortal.tsx",
+                            "markdownDescription": "替换宿主的 `DropdownMenuPortal`（宿主文件 `dropdown-menu.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dropdownMenuPortal\">`。"
+                        },
+                        "dropdownMenuTrigger": {
+                            "type": "string",
+                            "default": "ui/dropdownMenuTrigger.tsx",
+                            "markdownDescription": "替换宿主的 `DropdownMenuTrigger`（宿主文件 `dropdown-menu.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dropdownMenuTrigger\">`。"
+                        },
+                        "dropdownMenuContent": {
+                            "type": "string",
+                            "default": "ui/dropdownMenuContent.tsx",
+                            "markdownDescription": "替换宿主的 `DropdownMenuContent`（宿主文件 `dropdown-menu.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dropdownMenuContent\">`。"
+                        },
+                        "dropdownMenuGroup": {
+                            "type": "string",
+                            "default": "ui/dropdownMenuGroup.tsx",
+                            "markdownDescription": "替换宿主的 `DropdownMenuGroup`（宿主文件 `dropdown-menu.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dropdownMenuGroup\">`。"
+                        },
+                        "dropdownMenuLabel": {
+                            "type": "string",
+                            "default": "ui/dropdownMenuLabel.tsx",
+                            "markdownDescription": "替换宿主的 `DropdownMenuLabel`（宿主文件 `dropdown-menu.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dropdownMenuLabel\">`。"
+                        },
+                        "dropdownMenuItem": {
+                            "type": "string",
+                            "default": "ui/dropdownMenuItem.tsx",
+                            "markdownDescription": "替换宿主的 `DropdownMenuItem`（宿主文件 `dropdown-menu.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dropdownMenuItem\">`。"
+                        },
+                        "dropdownMenuCheckboxItem": {
+                            "type": "string",
+                            "default": "ui/dropdownMenuCheckboxItem.tsx",
+                            "markdownDescription": "替换宿主的 `DropdownMenuCheckboxItem`（宿主文件 `dropdown-menu.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dropdownMenuCheckboxItem\">`。"
+                        },
+                        "dropdownMenuRadioGroup": {
+                            "type": "string",
+                            "default": "ui/dropdownMenuRadioGroup.tsx",
+                            "markdownDescription": "替换宿主的 `DropdownMenuRadioGroup`（宿主文件 `dropdown-menu.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dropdownMenuRadioGroup\">`。"
+                        },
+                        "dropdownMenuRadioItem": {
+                            "type": "string",
+                            "default": "ui/dropdownMenuRadioItem.tsx",
+                            "markdownDescription": "替换宿主的 `DropdownMenuRadioItem`（宿主文件 `dropdown-menu.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dropdownMenuRadioItem\">`。"
+                        },
+                        "dropdownMenuSeparator": {
+                            "type": "string",
+                            "default": "ui/dropdownMenuSeparator.tsx",
+                            "markdownDescription": "替换宿主的 `DropdownMenuSeparator`（宿主文件 `dropdown-menu.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dropdownMenuSeparator\">`。"
+                        },
+                        "dropdownMenuShortcut": {
+                            "type": "string",
+                            "default": "ui/dropdownMenuShortcut.tsx",
+                            "markdownDescription": "替换宿主的 `DropdownMenuShortcut`（宿主文件 `dropdown-menu.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dropdownMenuShortcut\">`。"
+                        },
+                        "dropdownMenuSub": {
+                            "type": "string",
+                            "default": "ui/dropdownMenuSub.tsx",
+                            "markdownDescription": "替换宿主的 `DropdownMenuSub`（宿主文件 `dropdown-menu.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dropdownMenuSub\">`。"
+                        },
+                        "dropdownMenuSubTrigger": {
+                            "type": "string",
+                            "default": "ui/dropdownMenuSubTrigger.tsx",
+                            "markdownDescription": "替换宿主的 `DropdownMenuSubTrigger`（宿主文件 `dropdown-menu.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dropdownMenuSubTrigger\">`。"
+                        },
+                        "dropdownMenuSubContent": {
+                            "type": "string",
+                            "default": "ui/dropdownMenuSubContent.tsx",
+                            "markdownDescription": "替换宿主的 `DropdownMenuSubContent`（宿主文件 `dropdown-menu.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"dropdownMenuSubContent\">`。"
+                        },
+                        "tooltip": {
+                            "type": "string",
+                            "default": "ui/tooltip.tsx",
+                            "markdownDescription": "替换宿主的 `Tooltip`（宿主文件 `tooltip.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"tooltip\">`。"
+                        },
+                        "tooltipTrigger": {
+                            "type": "string",
+                            "default": "ui/tooltipTrigger.tsx",
+                            "markdownDescription": "替换宿主的 `TooltipTrigger`（宿主文件 `tooltip.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"tooltipTrigger\">`。"
+                        },
+                        "tooltipContent": {
+                            "type": "string",
+                            "default": "ui/tooltipContent.tsx",
+                            "markdownDescription": "替换宿主的 `TooltipContent`（宿主文件 `tooltip.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"tooltipContent\">`。"
+                        },
+                        "tooltipProvider": {
+                            "type": "string",
+                            "default": "ui/tooltipProvider.tsx",
+                            "markdownDescription": "替换宿主的 `TooltipProvider`（宿主文件 `tooltip.tsx`），模块的 default 导出即替换组件。props 类型见 `SlotProps<\"tooltipProvider\">`。"
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            }
+        },
+        "files": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "只有「从 URL 安装」才需要：列出包内全部文件，且必须包含 plugin.json 自己。"
+        }
+    },
+    "x-slots": [
+        "badge",
+        "button",
+        "card",
+        "cardAction",
+        "cardContent",
+        "cardDescription",
+        "cardFooter",
+        "cardHeader",
+        "cardTitle",
+        "checkbox",
+        "dialog",
+        "dialogClose",
+        "dialogContent",
+        "dialogDescription",
+        "dialogFooter",
+        "dialogHeader",
+        "dialogOverlay",
+        "dialogPortal",
+        "dialogTitle",
+        "dialogTrigger",
+        "dropdownMenu",
+        "dropdownMenuCheckboxItem",
+        "dropdownMenuContent",
+        "dropdownMenuGroup",
+        "dropdownMenuItem",
+        "dropdownMenuLabel",
+        "dropdownMenuPortal",
+        "dropdownMenuRadioGroup",
+        "dropdownMenuRadioItem",
+        "dropdownMenuSeparator",
+        "dropdownMenuShortcut",
+        "dropdownMenuSub",
+        "dropdownMenuSubContent",
+        "dropdownMenuSubTrigger",
+        "dropdownMenuTrigger",
+        "input",
+        "label",
+        "separator",
+        "sheet",
+        "sheetClose",
+        "sheetContent",
+        "sheetDescription",
+        "sheetFooter",
+        "sheetHeader",
+        "sheetTitle",
+        "sheetTrigger",
+        "skeleton",
+        "tabs",
+        "tabsContent",
+        "tabsList",
+        "tabsTrigger",
+        "tooltip",
+        "tooltipContent",
+        "tooltipProvider",
+        "tooltipTrigger"
+    ],
+    "x-slot-modules": {
+        "button.tsx": [
+            "Button"
+        ],
+        "card.tsx": [
+            "Card",
+            "CardHeader",
+            "CardFooter",
+            "CardTitle",
+            "CardAction",
+            "CardDescription",
+            "CardContent"
+        ],
+        "badge.tsx": [
+            "Badge"
+        ],
+        "input.tsx": [
+            "Input"
+        ],
+        "label.tsx": [
+            "Label"
+        ],
+        "separator.tsx": [
+            "Separator"
+        ],
+        "skeleton.tsx": [
+            "Skeleton"
+        ],
+        "checkbox.tsx": [
+            "Checkbox"
+        ],
+        "tabs.tsx": [
+            "Tabs",
+            "TabsList",
+            "TabsTrigger",
+            "TabsContent"
+        ],
+        "dialog.tsx": [
+            "Dialog",
+            "DialogClose",
+            "DialogContent",
+            "DialogDescription",
+            "DialogFooter",
+            "DialogHeader",
+            "DialogOverlay",
+            "DialogPortal",
+            "DialogTitle",
+            "DialogTrigger"
+        ],
+        "sheet.tsx": [
+            "Sheet",
+            "SheetTrigger",
+            "SheetClose",
+            "SheetContent",
+            "SheetHeader",
+            "SheetFooter",
+            "SheetTitle",
+            "SheetDescription"
+        ],
+        "dropdown-menu.tsx": [
+            "DropdownMenu",
+            "DropdownMenuPortal",
+            "DropdownMenuTrigger",
+            "DropdownMenuContent",
+            "DropdownMenuGroup",
+            "DropdownMenuLabel",
+            "DropdownMenuItem",
+            "DropdownMenuCheckboxItem",
+            "DropdownMenuRadioGroup",
+            "DropdownMenuRadioItem",
+            "DropdownMenuSeparator",
+            "DropdownMenuShortcut",
+            "DropdownMenuSub",
+            "DropdownMenuSubTrigger",
+            "DropdownMenuSubContent"
+        ],
+        "tooltip.tsx": [
+            "Tooltip",
+            "TooltipTrigger",
+            "TooltipContent",
+            "TooltipProvider"
+        ]
+    }
+}

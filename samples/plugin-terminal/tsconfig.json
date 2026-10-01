@@ -1,0 +1,4 @@
+{
+    "extends": "../chenify-plugin-types/tsconfig.json",
+    "include": ["ui"]
+}
