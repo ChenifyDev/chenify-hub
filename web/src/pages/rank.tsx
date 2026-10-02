@@ -1,11 +1,18 @@
-import { type CoinPeriod, type CoinUser, type FollowUser, type PointsUser, coinLeaderboard, rankUsersByFollowers, rankUsersByPostPoints } from "@/lib/api";
-import { type CSSProperties, useCallback, useEffect, useState } from "react";
+import {
+    type CoinPeriod,
+    type CoinUser,
+    type FollowUser,
+    type PointsUser,
+    coinLeaderboard,
+    rankUsersByFollowers,
+    rankUsersByPostPoints,
+} from "@/lib/api";
+import { type CSSProperties, useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card.tsx";
-import Empty from "@/components/tab/Empty.tsx";
-import SkeletonList from "@/components/forum/SkeletonList.tsx";
+import FeedList from "@/components/forum/FeedList.tsx";
 import UserRow from "@/components/user/UserRow.tsx";
-import LoadMore from "@/components/tab/LoadMore.tsx";
+import { useLazyFeed } from "@/hooks/useLazyFeed.ts";
 import type { TabData } from "@/types/tab.ts";
 import { useInfiniteList } from "@/hooks/useInfiniteList.ts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
@@ -13,9 +20,6 @@ import { UserAvatar } from "@/components/avatar.tsx";
 
 const LIMIT = 10;
 
-// 领奖台光束动画层：用 CSS mask 只在地块的边框区域显示渐变色条，
-// 并通过 offsetPath 让色条沿矩形边界画圈运动。width 控制粗细、via 是色相、
-// distance 是相位（下方 79.2667% / 29.2667% 两个数字为手调错峰）。
 function beamLayer(width: string, via: string, distance: string) {
     return (
         <div
@@ -30,8 +34,6 @@ function beamLayer(width: string, via: string, distance: string) {
     );
 }
 
-// 金银铜三格的布局与尺寸表：金牌 order-2 居中，银/铜分列左右（order-1 / order-3）；
-// 数组下标与 Podium 传入的 top[i] 一一对齐。
 const PODIUM_SLOTS = [
     {
         medal: "🥇",
@@ -120,122 +122,50 @@ function RankBadge({ rank, label, value }: { rank: number; label: string; value:
     );
 }
 
-function FollowersTab({ tab, title }: { tab: TabData<FollowUser>; title: string }) {
-    const { load, initialized } = tab;
-    useEffect(() => {
-        if (!initialized) void load(true);
-    }, [load, initialized]);
+type BoardUser = {
+    id: number;
+    username: string;
+    avatar?: string | null;
+    is_following: boolean;
+    rank?: number;
+};
 
-    if (tab.loading) return <SkeletonList />;
-    if (tab.error) return <Empty text={tab.error} />;
-    if (tab.hidden) return <Empty text="该用户将关注列表设置为私密，无法查看" />;
-    if (tab.items.length === 0) return <Empty text={`还没有${title}`} />;
-    const top = tab.items.slice(0, 3);
+function RankTab<T extends BoardUser>({
+    tab,
+    title,
+    label,
+    value,
+    hiddenText,
+}: {
+    tab: TabData<T>;
+    title: string;
+    label: string;
+    value: (user: T) => number;
+    hiddenText?: string;
+}) {
+    const feed = useLazyFeed(tab);
+    const top = feed.items.slice(0, 3);
     const topIds = new Set(top.map((u) => u.id));
+    const rows = { ...feed, items: feed.items.filter((u) => !topIds.has(u.id)) };
     return (
         <>
             <Podium
-                top={top.map((u) => ({ id: u.id, username: u.username, avatar: u.avatar, value: u.followers }))}
-                label="粉丝"
+                top={top.map((u) => ({ id: u.id, username: u.username, avatar: u.avatar, value: value(u) }))}
+                label={label}
             />
-            <div className="grid gap-1">
-                {tab.items
-                    .filter((u) => !topIds.has(u.id))
-                    .map((user) => (
-                        <UserRow
-                            key={user.id}
-                            user={user}
-                            onFollowChange={(updated) =>
-                                tab.updateItems((items) => items.map((u) => (u.id === updated.id ? updated : u)))
-                            }
-                        >
-                            {user.rank != null ? (
-                                <RankBadge rank={user.rank} label="粉丝" value={user.followers} />
-                            ) : null}
-                        </UserRow>
-                    ))}
-                <div className="pt-2">
-                    <LoadMore tab={tab} />
-                </div>
-            </div>
-        </>
-    );
-}
-
-function PostPointsTab({ tab, title }: { tab: TabData<PointsUser>; title: string }) {
-    const { load, initialized } = tab;
-    useEffect(() => {
-        if (!initialized) void load(true);
-    }, [load, initialized]);
-
-    if (tab.loading) return <SkeletonList />;
-    if (tab.error) return <Empty text={tab.error} />;
-    if (tab.items.length === 0) return <Empty text={`还没有${title}`} />;
-    const top = tab.items.slice(0, 3);
-    const topIds = new Set(top.map((u) => u.id));
-    return (
-        <>
-            <Podium
-                top={top.map((u) => ({ id: u.id, username: u.username, avatar: u.avatar, value: u.points }))}
-                label="积分"
-            />
-            <div className="grid gap-1">
-                {tab.items
-                    .filter((u) => !topIds.has(u.id))
-                    .map((user) => (
-                        <UserRow
-                            key={user.id}
-                            user={user}
-                            onFollowChange={(updated) =>
-                                tab.updateItems((items) => items.map((u) => (u.id === updated.id ? updated : u)))
-                            }
-                        >
-                            {user.rank != null ? <RankBadge rank={user.rank} label="积分" value={user.points} /> : null}
-                        </UserRow>
-                    ))}
-                <div className="pt-2">
-                    <LoadMore tab={tab} />
-                </div>
-            </div>
-        </>
-    );
-}
-
-function CoinsTab({ tab, title }: { tab: TabData<CoinUser>; title: string }) {
-    const { load, initialized } = tab;
-    useEffect(() => {
-        if (!initialized) void load(true);
-    }, [load, initialized]);
-
-    if (tab.loading) return <SkeletonList />;
-    if (tab.error) return <Empty text={tab.error} />;
-    if (tab.items.length === 0) return <Empty text={`还没有${title}`} />;
-    const top = tab.items.slice(0, 3);
-    const topIds = new Set(top.map((u) => u.id));
-    return (
-        <>
-            <Podium
-                top={top.map((u) => ({ id: u.id, username: u.username, avatar: u.avatar, value: u.coins }))}
-                label="硬币"
-            />
-            <div className="grid gap-1">
-                {tab.items
-                    .filter((u) => !topIds.has(u.id))
-                    .map((user) => (
-                        <UserRow
-                            key={user.id}
-                            user={user}
-                            onFollowChange={(updated) =>
-                                tab.updateItems((items) => items.map((u) => (u.id === updated.id ? updated : u)))
-                            }
-                        >
-                            {user.rank != null ? <RankBadge rank={user.rank} label="硬币" value={user.coins} /> : null}
-                        </UserRow>
-                    ))}
-                <div className="pt-2">
-                    <LoadMore tab={tab} />
-                </div>
-            </div>
+            <FeedList feed={rows} empty={`还没有${title}`} hiddenText={hiddenText} className="grid gap-1">
+                {(user) => (
+                    <UserRow
+                        key={user.id}
+                        user={user}
+                        onFollowChange={(updated) =>
+                            feed.updateItems((items) => items.map((u) => (u.id === updated.id ? updated : u)))
+                        }
+                    >
+                        {user.rank != null ? <RankBadge rank={user.rank} label={label} value={value(user)} /> : null}
+                    </UserRow>
+                )}
+            </FeedList>
         </>
     );
 }
@@ -290,7 +220,7 @@ function CoinTabs() {
             </TabsList>
             {COIN_PERIODS.map((p) => (
                 <TabsContent key={p.value} value={p.value} className="pt-4">
-                    <CoinsTab tab={tabs[p.value]} title="用户" />
+                    <RankTab tab={tabs[p.value]} title="用户" label="硬币" value={(u) => u.coins} />
                     {myCoinsRank[p.value] != null && (
                         <Card className="mt-4">
                             <CardContent className="flex items-center justify-center gap-2 py-4">
@@ -313,7 +243,6 @@ function RankTabs() {
     const followers = useInfiniteList<FollowUser>({
         fetcher: useCallback(async (offset) => {
             const res = await rankUsersByFollowers({ limit: LIMIT, offset });
-            // 数据加载的同时顺带把"我的排名"写入页面状态（用于渲染"我的排名"卡片）
             setMyRank(res.my_rank);
             return { items: res.items, hasMore: res.hasMore, hidden: false };
         }, []),
@@ -342,7 +271,13 @@ function RankTabs() {
                 </TabsTrigger>
             </TabsList>
             <TabsContent value="followers" className="pt-4">
-                <FollowersTab tab={followers} title="用户" />
+                <RankTab
+                    tab={followers}
+                    title="用户"
+                    label="粉丝"
+                    value={(u) => u.followers}
+                    hiddenText="该用户将关注列表设置为私密，无法查看"
+                />
                 {myRank != null && (
                     <Card className="mt-4">
                         <CardContent className="flex items-center justify-center gap-2 py-4">
@@ -353,7 +288,7 @@ function RankTabs() {
                 )}
             </TabsContent>
             <TabsContent value="points" className="pt-4">
-                <PostPointsTab tab={points} title="用户" />
+                <RankTab tab={points} title="用户" label="积分" value={(u) => u.points} />
                 {myPointsRank != null && (
                     <Card className="mt-4">
                         <CardContent className="flex items-center justify-center gap-2 py-4">

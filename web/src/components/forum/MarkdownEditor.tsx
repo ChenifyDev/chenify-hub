@@ -1,13 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
-import { Markdown } from "@tiptap/markdown";
-import Placeholder from "@tiptap/extension-placeholder";
-import StarterKit from "@tiptap/starter-kit";
-import { HighPriorityImage } from "@/lib/high-priority-image.ts";
-import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
-import { lowlight } from "lowlight";
 
-import { MathExtensions } from "@/lib/tiptap-math.ts";
+import { parseDocument, sharedExtensions } from "@/lib/tiptap-extensions.ts";
 import { PasteMarkdown } from "@/lib/paste-markdown.ts";
 import {
     Bold,
@@ -39,29 +33,7 @@ import { Input } from "@/components/ui/input.tsx";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
-const extensions = [
-    ...MathExtensions,
-    HighPriorityImage.configure({
-        allowBase64: true,
-    }),
-    StarterKit.configure({
-        heading: { levels: [1, 2, 3] },
-        link: {
-            openOnClick: false,
-            autolink: false,
-        },
-        codeBlock: false,
-    }),
-    CodeBlockLowlight.configure({ lowlight, defaultLanguage: "auto" }),
-    Placeholder.configure({ placeholder: "在这里写帖子…" }),
-    Markdown.configure({
-        markedOptions: {
-            breaks: true,
-            gfm: true,
-        },
-    }),
-    PasteMarkdown,
-];
+const extensions = [...sharedExtensions, PasteMarkdown];
 
 function ToolButton({
     icon: Icon,
@@ -107,8 +79,6 @@ type inputDataType = {
 };
 
 export default function EditorField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
-    // prevValueRef 记录上一次同步给父组件的值，用于区分"父组件回填新草稿"与
-    // "编辑器自身 onUpdate 产生的回传"，避免编辑器被自己的输出重置（两相同步防护）。
     const prevValueRef = useRef(value);
     const [inputData, setInputData] = useState<inputDataType>({
         needInput: false,
@@ -118,8 +88,7 @@ export default function EditorField({ value, onChange }: { value: string; onChan
 
     const editor = useEditor({
         extensions,
-        content: value,
-        contentType: "markdown",
+        content: parseDocument(value).doc,
         onUpdate: ({ editor: e }) => {
             const markdown = e.getMarkdown();
             prevValueRef.current = markdown;
@@ -128,12 +97,9 @@ export default function EditorField({ value, onChange }: { value: string; onChan
     });
 
     useEffect(() => {
-        if (!editor) return;
-        if (value === prevValueRef.current) return;
+        if (!editor || value === prevValueRef.current) return;
         prevValueRef.current = value;
-        if (editor.getMarkdown() !== value) {
-            editor.commands.setContent(value || "", { contentType: "markdown" });
-        }
+        if (editor.getMarkdown() !== value) editor.commands.setContent(parseDocument(value).doc);
     }, [value, editor]);
 
     const toolbar = useEditorState({

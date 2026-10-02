@@ -27,18 +27,6 @@ export function getPostDraft(
     });
 }
 
-export function createPost(content: string, images: File[], tags: string[]): Promise<Post> {
-    const form = new FormData();
-    form.set("content", content);
-    form.set("tags", tags.join(","));
-    for (const image of images) form.append("images", image);
-    return request<Post>("/posts", { method: "POST", body: form, headers: authHeaders() });
-}
-
-export function deletePost(id: number): Promise<{ success: boolean }> {
-    return request<{ success: boolean }>(`/posts/${id}`, { method: "DELETE", headers: authHeaders() });
-}
-
 export function setPostCommentArea(id: number, open: boolean): Promise<Post> {
     return request<Post>(`/posts/${id}/comment-area`, {
         method: "PATCH",

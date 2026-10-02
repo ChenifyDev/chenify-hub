@@ -39,84 +39,51 @@ import {
 import { formatDate } from "@/lib/format.ts";
 import { useCoinsStore } from "@/stores/useCoins.ts";
 import { useUserStore } from "@/stores/useUser.ts";
-import LoadMore from "@/components/tab/LoadMore.tsx";
 import Empty from "@/components/tab/Empty.tsx";
+import FeedList from "@/components/forum/FeedList.tsx";
 import UserRow from "@/components/user/UserRow.tsx";
+import { useLazyFeed } from "@/hooks/useLazyFeed.ts";
 import type { TabData } from "@/types/tab.ts";
 
 const LIMIT = 10;
 
 function PostsTab({ tab, canPin }: { tab: TabData<Post>; canPin: boolean }) {
-    const { load, initialized } = tab;
-    useEffect(() => {
-        if (!initialized) void load(true);
-    }, [load, initialized]);
-
-    if (tab.loading) return <SkeletonList />;
-    if (tab.error) return <Empty text={tab.error} />;
-    if (tab.items.length === 0) return <Empty text="还没有帖子" />;
+    const feed = useLazyFeed(tab);
     return (
-        <div className="grid gap-3">
-            {tab.items.map((post) => (
-                <PostCard
-                    key={post.id}
-                    post={post}
-                    canPin={canPin}
-                    onPinChanged={() => {
-                        void tab.load(true);
-                    }}
-                />
-            ))}
-            <LoadMore tab={tab} />
-        </div>
+        <FeedList feed={feed} empty="还没有帖子">
+            {(post) => <PostCard key={post.id} post={post} canPin={canPin} onPinChanged={() => void feed.load(true)} />}
+        </FeedList>
     );
 }
 
 function FavoritesTab({ tab }: { tab: TabData<Post> }) {
-    const { load, initialized } = tab;
-    useEffect(() => {
-        if (!initialized) void load(true);
-    }, [load, initialized]);
-
-    if (tab.loading) return <SkeletonList />;
-    if (tab.error) return <Empty text={tab.error} />;
-    if (tab.hidden) return <Empty text="该用户将收藏设置为私密，无法查看" />;
-    if (tab.items.length === 0) return <Empty text="还没有收藏" />;
+    const feed = useLazyFeed(tab);
     return (
-        <div className="grid gap-3">
-            {tab.items.map((post) => (
-                <PostCard key={post.id} post={post} />
-            ))}
-            <LoadMore tab={tab} />
-        </div>
+        <FeedList feed={feed} empty="还没有收藏" hiddenText="该用户将收藏设置为私密，无法查看">
+            {(post) => <PostCard key={post.id} post={post} />}
+        </FeedList>
     );
 }
 
 function UsersTab({ tab, title }: { tab: TabData<FollowUser>; title: string }) {
-    const { load, initialized } = tab;
-    useEffect(() => {
-        if (!initialized) void load(true);
-    }, [load, initialized]);
-
-    if (tab.loading) return <SkeletonList />;
-    if (tab.error) return <Empty text={tab.error} />;
-    if (tab.hidden) return <Empty text="该用户将关注列表设置为私密，无法查看" />;
-    if (tab.items.length === 0) return <Empty text={`还没有${title}`} />;
+    const feed = useLazyFeed(tab);
     return (
-        <div className="grid gap-1">
-            {tab.items.map((user) => (
+        <FeedList
+            feed={feed}
+            empty={`还没有${title}`}
+            hiddenText="该用户将关注列表设置为私密，无法查看"
+            className="grid gap-1"
+        >
+            {(user) => (
                 <UserRow
                     key={user.id}
                     user={user}
                     onFollowChange={(updated) =>
-                        tab.updateItems((items) => items.map((u) => (u.id === updated.id ? updated : u)))
+                        feed.updateItems((items) => items.map((u) => (u.id === updated.id ? updated : u)))
                     }
                 />
-            ))}
-            <div className="pt-2">
-                <LoadMore tab={tab} />
-            </div>
-        </div>
+            )}
+        </FeedList>
     );
 }
 

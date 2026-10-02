@@ -116,7 +116,14 @@ export const routes = {
             if (hidden) return Response.json({ items: [], total: 0, hidden: true, offset, limit, hasMore: false });
             const items = await storage.posts.listUserFavorites(id, { offset, limit, viewerId: me?.id ?? null });
             const total = await storage.posts.countUserFavorites(id);
-            return Response.json({ items, total, hidden: false, offset, limit, hasMore: offset + items.length < total });
+            return Response.json({
+                items,
+                total,
+                hidden: false,
+                offset,
+                limit,
+                hasMore: offset + items.length < total,
+            });
         },
     },
 
@@ -133,7 +140,14 @@ export const routes = {
             if (hidden) return Response.json({ items: [], total: 0, hidden: true, offset, limit, hasMore: false });
             const items = await storage.follows.listFollowing(id, me?.id ?? null, { offset, limit });
             const total = await storage.follows.countFollowing(id);
-            return Response.json({ items, total, hidden: false, offset, limit, hasMore: offset + items.length < total });
+            return Response.json({
+                items,
+                total,
+                hidden: false,
+                offset,
+                limit,
+                hasMore: offset + items.length < total,
+            });
         },
     },
 
@@ -150,7 +164,14 @@ export const routes = {
             if (hidden) return Response.json({ items: [], total: 0, hidden: true, offset, limit, hasMore: false });
             const items = await storage.follows.listFollowers(id, me?.id ?? null, { offset, limit });
             const total = await storage.follows.countFollowers(id);
-            return Response.json({ items, total, hidden: false, offset, limit, hasMore: offset + items.length < total });
+            return Response.json({
+                items,
+                total,
+                hidden: false,
+                offset,
+                limit,
+                hasMore: offset + items.length < total,
+            });
         },
     },
 } satisfies RouteMap;

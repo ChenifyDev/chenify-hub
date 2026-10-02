@@ -1,22 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ListTree } from "lucide-react";
 
 import { Button } from "@/components/ui/button.tsx";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet.tsx";
-import { buildAstTree, type AstTreeNode } from "@/lib/ast-tree.ts";
+import type { DocHeading } from "@/lib/tiptap-extensions.ts";
+import { parseDocument } from "@/lib/tiptap-extensions.ts";
+import { parseFrontmatter } from "@/lib/frontmatter.ts";
 import { cn } from "@/lib/utils.ts";
 
-function AstTreeList({ content }: { content: string }) {
-    const nodes = useMemo(() => buildAstTree(content), [content]);
+function TocList({ nodes }: { nodes: DocHeading[] }) {
     const [activeId, setActiveId] = useState<string | null>(null);
-    const observerRef = useRef<IntersectionObserver | null>(null);
 
-    // 滚动定位（scroll-spy）：rootMargin 下缘收窄到视口底部 15%，
-    // 让"进入该区域的标题"成为当前高亮项，跟着阅读进度走。
     useEffect(() => {
         if (nodes.length === 0) return;
-        observerRef.current?.disconnect();
-        observerRef.current = new IntersectionObserver(
+        const observer = new IntersectionObserver(
             (entries) => {
                 const intersecting = entries.filter((entry) => entry.isIntersecting);
                 if (intersecting.length === 0) return;
@@ -32,23 +29,21 @@ function AstTreeList({ content }: { content: string }) {
         );
         for (const node of nodes) {
             const el = document.getElementById(node.id);
-            if (el) observerRef.current.observe(el);
+            if (el) observer.observe(el);
         }
-        return () => observerRef.current?.disconnect();
+        return () => observer.disconnect();
     }, [nodes]);
-
-    const handleClick = (id: string) => {
-        setActiveId(id);
-        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    };
 
     return (
         <div className="grid gap-0.5">
-            {nodes.map((node: AstTreeNode) => (
+            {nodes.map((node) => (
                 <button
                     key={node.id}
                     type="button"
-                    onClick={() => handleClick(node.id)}
+                    onClick={() => {
+                        setActiveId(node.id);
+                        document.getElementById(node.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
                     style={{ paddingLeft: `${(node.depth - 1) * 12 + 8}px` }}
                     className={cn(
                         "truncate rounded-md px-2 py-1 text-left text-[13px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
@@ -63,7 +58,7 @@ function AstTreeList({ content }: { content: string }) {
 }
 
 export function PostAstTree({ content }: { content: string }) {
-    const nodes = useMemo(() => buildAstTree(content), [content]);
+    const nodes = useMemo(() => parseDocument(parseFrontmatter(content).body).headings, [content]);
     const [open, setOpen] = useState(false);
 
     if (nodes.length === 0) return null;
@@ -88,7 +83,7 @@ export function PostAstTree({ content }: { content: string }) {
                         </SheetTitle>
                     </SheetHeader>
                     <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
-                        <AstTreeList content={content} />
+                        <TocList nodes={nodes} />
                     </div>
                 </SheetContent>
             </Sheet>

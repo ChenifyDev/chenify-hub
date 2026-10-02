@@ -187,10 +187,7 @@ export interface CoinsRepo {
         recipient_delta: number;
     }>;
     hasTipped(userId: number, postId: number): Promise<boolean>;
-    rankCoins(
-        options: { period: CoinPeriod; offset: number; limit: number },
-        viewerId?: number,
-    ): Promise<CoinUser[]>;
+    rankCoins(options: { period: CoinPeriod; offset: number; limit: number }, viewerId?: number): Promise<CoinUser[]>;
     getCoinRank(userId: number, period: CoinPeriod): Promise<number>;
     getPostCoinsReceived(postId: number): Promise<number>;
     getCoinsReceivedTotal(userId: number): Promise<number>;

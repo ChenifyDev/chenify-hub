@@ -33,8 +33,6 @@ export default function AuthBootstrap({ children }: { children: ReactNode }) {
                 return;
             } catch (err) {
                 if (cancelled) return;
-                // 仅当 token 被服务端判定为无效（401）时才清除登录态；
-                // 5xx/网络等瞬时错误保留 token 并重试，避免误登出。
                 if (err instanceof ApiError && err.status === 401) {
                     clearToken();
                     setChecking(false);
@@ -46,7 +44,6 @@ export default function AuthBootstrap({ children }: { children: ReactNode }) {
                     setTimeout(() => void tryMe(), delay);
                     return;
                 }
-                // 多次瞬时错误后仍未成功：保留 token，结束检查，等待下次重载再试。
                 setChecking(false);
             }
         };

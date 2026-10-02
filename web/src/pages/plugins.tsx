@@ -32,7 +32,6 @@ const SOURCE_LABEL: Record<PluginInstallSource, string> = {
     url: "远程 URL",
 };
 
-/** 类型模板由 scripts/gen-plugin-types.ts 生成并打在这里，见 docs/PLUGIN.md §5。 */
 const TYPES_URL = `${import.meta.env.BASE_URL}chenify-plugin-types/chenify-plugin-types.zip`;
 
 function formatTime(value: number): string {
@@ -55,7 +54,6 @@ export default function PluginsPage() {
     const [url, setUrl] = useState("");
     const [busy, setBusy] = useState(false);
     const [notice, setNotice] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
-    // 类型包是构建产物，站点上不一定存在（没跑过 gen:plugin-types 的开发环境就没有）
     const [hasTypes, setHasTypes] = useState<boolean | null>(null);
 
     useEffect(() => {
@@ -124,7 +122,6 @@ export default function PluginsPage() {
             link.href = objectUrl;
             link.download = "chenify-plugin-types.zip";
             link.click();
-            // 立刻 revoke 会让部分浏览器拿不到内容
             setTimeout(() => URL.revokeObjectURL(objectUrl), 10_000);
         }, "类型模板已开始下载，解压后放在插件目录隔壁");
 
@@ -198,7 +195,6 @@ export default function PluginsPage() {
                             type="file"
                             multiple
                             hidden
-                            // 目录选择没有标准属性，webkitdirectory 是各浏览器的既成事实
                             {...{ webkitdirectory: "", directory: "" }}
                             onChange={onFolder}
                         />

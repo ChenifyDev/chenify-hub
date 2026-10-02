@@ -3,19 +3,17 @@ import { Clock, Flame, Signpost } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import PostCard from "@/components/forum/PostCard.tsx";
-import LoadMore from "@/components/tab/LoadMore.tsx";
+import FeedList from "@/components/forum/FeedList.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { listPosts, listTags, type Post } from "@/lib/api";
 import { cn } from "@/lib/utils.ts";
 import { useInfiniteList } from "@/hooks/useInfiniteList.ts";
-import Empty from "@/components/tab/Empty.tsx";
-import SkeletonList from "@/components/forum/SkeletonList.tsx";
 
 type Sort = "hot" | "latest";
 
 const LIMIT = 10;
 
-function Feed({ sort, tag }: { sort: Sort; tag: string | null }) {
+function PostFeed({ sort, tag }: { sort: Sort; tag: string | null }) {
     const feed = useInfiniteList<Post>({
         fetcher: useCallback(
             async (offset) => {
@@ -27,17 +25,7 @@ function Feed({ sort, tag }: { sort: Sort; tag: string | null }) {
         limit: LIMIT,
     });
 
-    if (feed.loading) return <SkeletonList />;
-    if (feed.error) return <Empty text={feed.error} />;
-    if (feed.items.length === 0) return <Empty text="这里还空空如也" />;
-    return (
-        <div className="grid gap-3">
-            {feed.items.map((post) => (
-                <PostCard key={post.id} post={post} />
-            ))}
-            {feed.hasMore && <LoadMore loading={feed.loadingMore} onClick={() => void feed.load()} />}
-        </div>
-    );
+    return <FeedList feed={feed}>{(post) => <PostCard key={post.id} post={post} />}</FeedList>;
 }
 
 export default function Posts() {
@@ -112,7 +100,7 @@ export default function Posts() {
                 </div>
             )}
 
-            <Feed key={`${sort}:${tag ?? ""}`} sort={sort} tag={tag} />
+            <PostFeed key={`${sort}:${tag ?? ""}`} sort={sort} tag={tag} />
         </div>
     );
 }

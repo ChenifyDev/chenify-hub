@@ -2,8 +2,6 @@ import { nodePasteRule } from "@tiptap/core";
 import Image from "@tiptap/extension-image";
 
 export const HighPriorityImage = Image.extend({
-    priority: 1100,
-
     addPasteRules() {
         return [
             nodePasteRule({

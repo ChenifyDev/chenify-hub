@@ -1,5 +1,3 @@
-// 服务端时间形如 "YYYY-MM-DD HH:mm:ss"（无时区前缀），约定按 UTC 解析：
-// 补一个 T 和 Z，统一转成 Date 后再本地化展示，保证各时区显示一致。
 function parseServerDate(value: string): Date {
     return new Date(value.includes(" ") ? `${value.replace(" ", "T")}Z` : value);
 }

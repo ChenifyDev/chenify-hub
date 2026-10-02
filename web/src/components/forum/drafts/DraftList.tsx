@@ -33,15 +33,11 @@ export default function DraftList() {
 
     const { load } = feed;
 
-    // 一行 effect 覆盖两种触发：挂载时首载，以及 status 切换后（load 引用随 status 变化）
-    // load(true)=reset：切状态必须从头拉，否则上一份列表残留
     useEffect(() => {
         setActionError(null);
         void load(true);
     }, [load]);
 
-    // 对草稿做发布/下架/删除后，直接就地改本地的 items（end 返回新数组），
-// 不重新请求列表，保持表格即时一致
     const runAction = async (
         draft: Draft,
         action: (id: number) => Promise<unknown>,
@@ -119,9 +115,7 @@ export default function DraftList() {
                                         onDelete={handleDelete}
                                     />
                                 ))}
-                                {feed.hasMore && (
-                                    <LoadMore loading={feed.loadingMore} onClick={() => void feed.load()} />
-                                )}
+                                <LoadMore feed={feed} />
                             </>
                         )}
                     </div>

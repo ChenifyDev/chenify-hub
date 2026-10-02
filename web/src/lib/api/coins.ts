@@ -1,9 +1,7 @@
 import type { CoinPeriod, CoinUser } from "./types";
 import { authHeaders, qs, request } from "./http";
 
-export function tipPost(
-    postId: number,
-): Promise<{ success: boolean; balance: number; coins_count: number }> {
+export function tipPost(postId: number): Promise<{ success: boolean; balance: number; coins_count: number }> {
     return request<{ success: boolean; balance: number; coins_count: number }>(`/posts/${postId}/coin`, {
         method: "POST",
         headers: authHeaders(),
@@ -53,8 +51,12 @@ export function coinLeaderboard({
     offset: number;
     limit: number;
 }): Promise<{ items: CoinUser[]; total: number; hasMore: boolean; my_rank: number; offset: number; limit: number }> {
-    return request<{ items: CoinUser[]; total: number; hasMore: boolean; my_rank: number; offset: number; limit: number }>(
-        `/rank/coins${qs({ period, offset, limit })}`,
-        { headers: authHeaders() },
-    );
+    return request<{
+        items: CoinUser[];
+        total: number;
+        hasMore: boolean;
+        my_rank: number;
+        offset: number;
+        limit: number;
+    }>(`/rank/coins${qs({ period, offset, limit })}`, { headers: authHeaders() });
 }

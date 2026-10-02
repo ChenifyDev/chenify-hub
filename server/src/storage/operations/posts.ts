@@ -20,11 +20,7 @@ import { buildPosts, heatPost, type PostHydrationContext } from "../mappers";
 import type { Post, PostRow } from "../types";
 import type { PostsRepo } from "../plugin";
 
-async function boardPosts(
-    store: CollectionStore,
-    blobStore: BlobStore,
-    loadContent = false,
-): Promise<PostRow[]> {
+async function boardPosts(store: CollectionStore, blobStore: BlobStore, loadContent = false): Promise<PostRow[]> {
     const [posts, users, comments, likes, favorites, coins] = await Promise.all([
         store.read<StoredPost>(C.posts),
         store.read<StoredUser>(C.users),
@@ -69,10 +65,7 @@ async function loadRowsContent(blobStore: BlobStore, rows: PostRow[]): Promise<v
 }
 
 async function postIdsWithTag(store: CollectionStore, tag: string): Promise<Set<number>> {
-    const [tags, postTags] = await Promise.all([
-        store.read<StoredTag>(C.tags),
-        store.read<StoredPostTag>(C.postTags),
-    ]);
+    const [tags, postTags] = await Promise.all([store.read<StoredTag>(C.tags), store.read<StoredPostTag>(C.postTags)]);
     const tagId = tags.find((t) => t.name === tag)?.id;
     const ids = new Set<number>();
     if (tagId != null) {
@@ -393,9 +386,7 @@ export function createPostsRepo(store: CollectionStore, blobStore: BlobStore): P
                 .filter((row) => row.user_id === userId)
                 .sort(
                     (a, b) =>
-                        Number(b.pinned) - Number(a.pinned) ||
-                        b.created_at.localeCompare(a.created_at) ||
-                        b.id - a.id,
+                        Number(b.pinned) - Number(a.pinned) || b.created_at.localeCompare(a.created_at) || b.id - a.id,
                 );
             const page = filtered.slice(options.offset, options.offset + options.limit);
             await loadRowsContent(blobStore, page);
@@ -447,7 +438,9 @@ export function createPostsRepo(store: CollectionStore, blobStore: BlobStore): P
         async searchPosts(options) {
             const { offset, limit, keyword, sort = "latest" } = options;
             const kw = keyword.toLowerCase();
-            let rows = (await boardPosts(store, blobStore, true)).filter((row) => row.content.toLowerCase().includes(kw));
+            let rows = (await boardPosts(store, blobStore, true)).filter((row) =>
+                row.content.toLowerCase().includes(kw),
+            );
             if (sort === "hot") {
                 rows = [...rows].sort(
                     (a, b) =>

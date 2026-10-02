@@ -13,7 +13,6 @@ export interface AccessTokenPayload {
 }
 
 export async function signAccessToken(userId: number, clientId: string, scope: string): Promise<string> {
-    // sub stays numeric: consumed internally by getAuthUserId
     const payload = {
         sub: userId,
         client_id: clientId,
@@ -37,7 +36,6 @@ export async function verifyAccessToken(token: string): Promise<AccessTokenPaylo
     }
 }
 
-// OIDC id_token; goth requires aud=client_id and iss matching the discovery issuer
 export async function signIdToken(userId: number, clientId: string, issuer: string): Promise<string> {
     return new SignJWT({
         iss: issuer,

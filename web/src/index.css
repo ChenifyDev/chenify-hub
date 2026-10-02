@@ -5,44 +5,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/*
- * 插件工具类白名单。
- *
- * 插件代码存在 IndexedDB 里，构建时 Tailwind 扫不到，所以插件里写的工具类不会生成对应的
- * CSS。站点自身用到的类本来就会被扫到，这里补的是「应用没用过、但插件作者大概率会写」的那部分。
- * 白名单外的类不会报错，只是没有样式 —— 插件可以在 plugin.json 的 ui.style 里自己写普通 CSS，
- * 或者复用宿主组件的 buttonVariants / badgeVariants / tabsListVariants 之类已经带类名的变体。
- */
-@source inline(
-    "{hover:,focus:,focus-visible:,active:,disabled:,aria-selected:,data-active:}{bg,text,border,ring,fill,stroke,divide,outline}-{primary,primary-foreground,secondary,secondary-foreground,muted,muted-foreground,accent,accent-foreground,card,card-foreground,popover,popover-foreground,input,border,ring,destructive,destructive-foreground,foreground,background,transparent,current}"
-);
-@source inline(
-    "{rounded,border}-{none,xs,sm,md,xl,2xl,3xl,full} shadow-{xs,sm,md,lg,xl,2xl,inner,none} font-{sans,serif,mono} text-{xs,sm,base,lg,xl,2xl,3xl,4xl,5xl,6xl} leading-{none,tight,snug,normal,relaxed,loose}"
-);
-@source inline(
-    "text-{left,center,right,justify,start,end} font-{normal,medium,semibold,bold} italic underline line-through truncate {whitespace,overflow}-{normal,nowrap,hidden,visible,auto,clip,ellipsis} uppercase lowercase capitalize"
-);
-@source inline(
-    "p{,-}{0,px,0.5,1,1.5,2,2.5,3,4,5,6,8,10,12,16,20,24} m{,-}{0,px,0.5,1,1.5,2,2.5,3,4,5,6,8,10,12,16,20,24} {px,py,pt,pb,pl,pr,ps,pe}-{0,px,0.5,1,1.5,2,2.5,3,4,5,6,8,12,16}"
-);
-@source inline(
-    "{w,h,size,min-w,min-h,max-w,max-h}-{0,px,0.5,1,2,3,4,5,6,8,10,12,16,20,24,32,40,48,64,72,96,full,auto,screen,min,max,fit} flex-{1,auto,initial,none} grow shrink basis-{0,auto,full,1/2}"
-);
-@source inline(
-    "gap-{0,0.5,1,1.5,2,2.5,3,4,5,6,8,10,12,16} {space-x,space-y}-{0,0.5,1,1.5,2,3,4,6,8} justify-{start,end,center,between,around,evenly,stretch} items-{start,end,center,baseline,stretch} self-{start,end,center,stretch,auto} place-{items,content}-{start,end,center,between,around,evenly,stretch}"
-);
-@source inline(
-    "opacity-{0,5,10,15,20,25,30,40,50,60,70,75,80,90,95,100} z-{0,10,20,30,40,50} overflow-{auto,hidden,clip,visible,scroll} {overflow-x,overflow-y}-{auto,hidden,clip,visible,scroll} object-{contain,cover,fill,none,scale-down} aspect-{auto,square,video} cursor-{auto,default,pointer,not-allowed,grab,text,wait,move,help}"
-);
-@source inline(
-    "grid grid-cols-{1,2,3,4,5,6,12} grid-rows-{1,2,3,4,5,6} col-span-{1,2,3,4,full} row-span-{1,2,3,4,full} flex-col flex-row flex-wrap flex-nowrap flex-1 flex-none order-{1,2,3,last,none} relative absolute fixed sticky inset-{0,x,y} top-{0,1,2,4,8} bottom-{0,1,2,4,8} left-{0,1,2,4,8} right-{0,1,2,4,8}"
-);
-@source inline(
-    "transition-{all,colors,opacity,shadow,transform,none} duration-{75,100,150,200,300,500,700,1000} ease-{linear,in,out,in-out} delay-{75,150,300,500,700,1000} animate-{spin,ping,pulse,bounce,float,none} motion-safe: motion-reduce:"
-);
-@source inline(
-    "border{,-}{2,4,8} divide-{x,y} ring-{0,1,2,3,4,8} outline-{0,1,2,4,8} blur-{none,sm,md,lg,xl,2xl,3xl} backdrop-blur-{none,sm,md,lg,xl,2xl} drop-shadow-{none,sm,md,lg,xl,2xl} mix-blend-{normal,multiply,screen,overlay,darken,lighten}"
-);
+@source inline("{hover:,focus:,focus-visible:,active:,disabled:,aria-selected:,data-active:}{bg,text,border,ring,fill,stroke,divide,outline}-{primary,primary-foreground,secondary,secondary-foreground,muted,muted-foreground,accent,accent-foreground,card,card-foreground,popover,popover-foreground,input,border,ring,destructive,destructive-foreground,foreground,background,transparent,current}");
+@source inline("{rounded,border}-{none,xs,sm,md,xl,2xl,3xl,full} shadow-{xs,sm,md,lg,xl,2xl,inner,none} font-{sans,serif,mono} text-{xs,sm,base,lg,xl,2xl,3xl,4xl,5xl,6xl} leading-{none,tight,snug,normal,relaxed,loose}");
+@source inline("text-{left,center,right,justify,start,end} font-{normal,medium,semibold,bold} italic underline line-through truncate {whitespace,overflow}-{normal,nowrap,hidden,visible,auto,clip,ellipsis} uppercase lowercase capitalize");
+@source inline("p{,-}{0,px,0.5,1,1.5,2,2.5,3,4,5,6,8,10,12,16,20,24} m{,-}{0,px,0.5,1,1.5,2,2.5,3,4,5,6,8,10,12,16,20,24} {px,py,pt,pb,pl,pr,ps,pe}-{0,px,0.5,1,1.5,2,2.5,3,4,5,6,8,12,16}");
+@source inline("{w,h,size,min-w,min-h,max-w,max-h}-{0,px,0.5,1,2,3,4,5,6,8,10,12,16,20,24,32,40,48,64,72,96,full,auto,screen,min,max,fit} flex-{1,auto,initial,none} grow shrink basis-{0,auto,full,1/2}");
+@source inline("gap-{0,0.5,1,1.5,2,2.5,3,4,5,6,8,10,12,16} {space-x,space-y}-{0,0.5,1,1.5,2,3,4,6,8} justify-{start,end,center,between,around,evenly,stretch} items-{start,end,center,baseline,stretch} self-{start,end,center,stretch,auto} place-{items,content}-{start,end,center,between,around,evenly,stretch}");
+@source inline("opacity-{0,5,10,15,20,25,30,40,50,60,70,75,80,90,95,100} z-{0,10,20,30,40,50} overflow-{auto,hidden,clip,visible,scroll} {overflow-x,overflow-y}-{auto,hidden,clip,visible,scroll} object-{contain,cover,fill,none,scale-down} aspect-{auto,square,video} cursor-{auto,default,pointer,not-allowed,grab,text,wait,move,help}");
+@source inline("grid grid-cols-{1,2,3,4,5,6,12} grid-rows-{1,2,3,4,5,6} col-span-{1,2,3,4,full} row-span-{1,2,3,4,full} flex-col flex-row flex-wrap flex-nowrap flex-1 flex-none order-{1,2,3,last,none} relative absolute fixed sticky inset-{0,x,y} top-{0,1,2,4,8} bottom-{0,1,2,4,8} left-{0,1,2,4,8} right-{0,1,2,4,8}");
+@source inline("transition-{all,colors,opacity,shadow,transform,none} duration-{75,100,150,200,300,500,700,1000} ease-{linear,in,out,in-out} delay-{75,150,300,500,700,1000} animate-{spin,ping,pulse,bounce,float,none} motion-safe: motion-reduce:");
+@source inline("border{,-}{2,4,8} divide-{x,y} ring-{0,1,2,3,4,8} outline-{0,1,2,4,8} blur-{none,sm,md,lg,xl,2xl,3xl} backdrop-blur-{none,sm,md,lg,xl,2xl} drop-shadow-{none,sm,md,lg,xl,2xl} mix-blend-{normal,multiply,screen,overlay,darken,lighten}");
 
 @theme inline {
     --font-heading: var(--font-sans);
@@ -288,6 +260,12 @@ body.app-bg-active [data-slot="tabs-list"] {
     .markdown-body ol {
         @apply list-decimal pl-6;
     }
+    .markdown-body ul[data-type="taskList"] {
+        @apply list-none pl-0;
+    }
+    .markdown-body ul[data-type="taskList"] li {
+        @apply flex items-start gap-2;
+    }
     .markdown-body a {
         @apply text-primary underline underline-offset-2 hover:opacity-80;
     }
@@ -380,6 +358,48 @@ body.app-bg-active [data-slot="tabs-list"] {
     }
     .markdown-body .katex-display {
         @apply overflow-x-auto overflow-y-hidden py-1;
+    }
+    .markdown-body sup[data-type="footnote-ref"] a {
+        @apply ml-0.5 text-xs text-primary;
+    }
+    .markdown-body ol[data-type="footnote-list"] {
+        @apply mt-4 list-decimal border-t border-border pt-3 pl-6 text-sm text-muted-foreground;
+    }
+    .markdown-body li[data-type="footnote-item"] a.footnote-back {
+        @apply ml-1 text-primary no-underline;
+    }
+    .markdown-body dl {
+        @apply my-3 grid gap-1;
+    }
+    .markdown-body dt {
+        @apply font-semibold;
+    }
+    .markdown-body dd {
+        @apply ml-4 text-muted-foreground;
+    }
+    .markdown-body abbr[title] {
+        @apply underline decoration-dotted underline-offset-2;
+    }
+    .markdown-body nav[data-type="toc"] {
+        @apply my-3 rounded-lg border border-border p-3 text-sm;
+    }
+    .markdown-body nav[data-type="toc"] ol {
+        @apply m-0 list-none pl-0;
+    }
+    .markdown-body nav[data-type="toc"] li.toc-depth-2 {
+        @apply pl-4;
+    }
+    .markdown-body nav[data-type="toc"] li.toc-depth-3 {
+        @apply pl-8;
+    }
+    .markdown-body .mermaid-block {
+        @apply my-3 overflow-x-auto rounded-lg border border-border p-3;
+    }
+    .markdown-body .mermaid-block summary {
+        @apply cursor-pointer text-xs text-muted-foreground;
+    }
+    .markdown-body .mermaid-block svg {
+        @apply max-w-full;
     }
 
     .tiptap {

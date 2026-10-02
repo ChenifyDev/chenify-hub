@@ -17,11 +17,7 @@ export function updateDraft(id: number, content: string, images: File[], tags: s
     return request<Draft>(`/drafts/${id}`, { method: "PATCH", body: form, headers: authHeaders() });
 }
 
-export function listDrafts(
-    status?: "draft" | "published",
-    offset = 0,
-    limit = 20,
-): Promise<Paginated<Draft>> {
+export function listDrafts(status?: "draft" | "published", offset = 0, limit = 20): Promise<Paginated<Draft>> {
     return request<Paginated<Draft>>(`/drafts${qs({ status, offset, limit })}`, { headers: authHeaders() });
 }
 

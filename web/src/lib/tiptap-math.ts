@@ -89,7 +89,7 @@ export const BlockMath = Node.create({
     markdownTokenizer: {
         name: "blockMath",
         level: "block",
-        start: (src: string) => src.indexOf("$$"),
+        start: (src: string) => (/^\s*\$\$/.test(src) ? 0 : -1),
         tokenize: (src: string) => {
             const match = src.match(/^\$\$([\s\S]*?)\$\$/);
             if (!match) return undefined;

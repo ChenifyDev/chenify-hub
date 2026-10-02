@@ -5,11 +5,7 @@ export function getSpace(userId: number): Promise<SpaceSkeleton> {
     return request<SpaceSkeleton>(`/users/${userId}/space`, { headers: authHeaders() });
 }
 
-export function getSpacePosts(
-    userId: number,
-    offset = 0,
-    limit = 20,
-): Promise<Paginated<Post>> {
+export function getSpacePosts(userId: number, offset = 0, limit = 20): Promise<Paginated<Post>> {
     return request<Paginated<Post>>(`/users/${userId}/space/posts${qs({ offset, limit })}`, { headers: authHeaders() });
 }
 
@@ -29,10 +25,14 @@ export function getSpaceFollowing(
     offset = 0,
     limit = 20,
 ): Promise<{ items: FollowUser[]; total: number; hidden: boolean; offset: number; limit: number; hasMore: boolean }> {
-    return request<{ items: FollowUser[]; total: number; hidden: boolean; offset: number; limit: number; hasMore: boolean }>(
-        `/users/${userId}/space/following${qs({ offset, limit })}`,
-        { headers: authHeaders() },
-    );
+    return request<{
+        items: FollowUser[];
+        total: number;
+        hidden: boolean;
+        offset: number;
+        limit: number;
+        hasMore: boolean;
+    }>(`/users/${userId}/space/following${qs({ offset, limit })}`, { headers: authHeaders() });
 }
 
 export function getSpaceFollowers(
@@ -40,10 +40,14 @@ export function getSpaceFollowers(
     offset = 0,
     limit = 20,
 ): Promise<{ items: FollowUser[]; total: number; hidden: boolean; offset: number; limit: number; hasMore: boolean }> {
-    return request<{ items: FollowUser[]; total: number; hidden: boolean; offset: number; limit: number; hasMore: boolean }>(
-        `/users/${userId}/space/followers${qs({ offset, limit })}`,
-        { headers: authHeaders() },
-    );
+    return request<{
+        items: FollowUser[];
+        total: number;
+        hidden: boolean;
+        offset: number;
+        limit: number;
+        hasMore: boolean;
+    }>(`/users/${userId}/space/followers${qs({ offset, limit })}`, { headers: authHeaders() });
 }
 
 export function updatePrivacy(flags: {
@@ -76,10 +80,14 @@ export function rankUsersByFollowers({
     offset: number;
     limit: number;
 }): Promise<{ items: FollowUser[]; total: number; hasMore: boolean; my_rank: number; offset: number; limit: number }> {
-    return request<{ items: FollowUser[]; total: number; hasMore: boolean; my_rank: number; offset: number; limit: number }>(
-        `/rank/followers${qs({ offset, limit })}`,
-        { headers: authHeaders() },
-    );
+    return request<{
+        items: FollowUser[];
+        total: number;
+        hasMore: boolean;
+        my_rank: number;
+        offset: number;
+        limit: number;
+    }>(`/rank/followers${qs({ offset, limit })}`, { headers: authHeaders() });
 }
 
 export function rankUsersByPostPoints({
@@ -89,10 +97,14 @@ export function rankUsersByPostPoints({
     offset: number;
     limit: number;
 }): Promise<{ items: PointsUser[]; total: number; hasMore: boolean; my_rank: number; offset: number; limit: number }> {
-    return request<{ items: PointsUser[]; total: number; hasMore: boolean; my_rank: number; offset: number; limit: number }>(
-        `/rank/post/points${qs({ offset, limit })}`,
-        { headers: authHeaders() },
-    );
+    return request<{
+        items: PointsUser[];
+        total: number;
+        hasMore: boolean;
+        my_rank: number;
+        offset: number;
+        limit: number;
+    }>(`/rank/post/points${qs({ offset, limit })}`, { headers: authHeaders() });
 }
 
 export function searchUsers({

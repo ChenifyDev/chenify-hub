@@ -69,10 +69,7 @@ export function PostCard({
                 <div className="min-w-0 flex flex-col gap-2">
                     <Link to={`/posts/${postState.id}`} className="group block min-w-0">
                         {title && <h3 className="line-clamp-2 text-base font-semibold">{title}</h3>}
-                        <Markdown
-                            content={expanded ? body : excerpt}
-                            className={cn("group-hover:opacity-80", compact && "line-clamp-6")}
-                        />
+                        <Markdown content={expanded ? body : excerpt} className={cn(compact && "line-clamp-6")} />
                     </Link>
                     {isTruncated && (
                         <Button

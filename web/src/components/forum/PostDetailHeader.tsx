@@ -34,10 +34,7 @@ export function PostDetailHeader({
     return (
         <div className="flex items-start justify-between gap-4">
             <div className="flex min-w-0 items-center gap-2">
-                <Link
-                    to={`/users/${post.author.id}`}
-                    className="flex min-w-0 items-center gap-2 hover:text-foreground"
-                >
+                <Link to={`/users/${post.author.id}`} className="flex min-w-0 items-center gap-2 hover:text-foreground">
                     <UserAvatar user={post.author} />
                     <span className="truncate text-sm font-medium">{post.author.username}</span>
                 </Link>

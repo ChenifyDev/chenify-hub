@@ -66,7 +66,6 @@ export function PostActionsBar({
                 title="投 1 枚硬币，作者获得 0.1 枚"
             >
                 <Coins className="size-4" />
-                {/* coins_count 按 0.1 枚存储，这里换算为整枚展示 */}
                 投币 {post.coins_count * 10}
             </Button>
             <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
@@ -99,12 +98,7 @@ export function PostActionsBar({
                     {commentAreaBusy ? "保存中…" : commentArea ? "关闭评论" : "开启评论"}
                 </Button>
             )}
-            <Button
-                variant="ghost"
-                size="sm"
-                className="ml-auto text-muted-foreground"
-                onClick={onCopy}
-            >
+            <Button variant="ghost" size="sm" className="ml-auto text-muted-foreground" onClick={onCopy}>
                 {copied ? <Check /> : <Copy />}
                 {copied ? "已复制" : "复制链接"}
             </Button>
