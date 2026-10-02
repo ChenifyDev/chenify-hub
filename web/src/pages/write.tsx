@@ -5,6 +5,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import EditorField from "@/components/forum/MarkdownEditor.tsx";
 import { ImagePicker } from "@/components/forum/write/ImagePicker.tsx";
+import { Page } from "@/components/layout/Page.tsx";
 import { TagInput } from "@/components/forum/write/TagInput.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent } from "@/components/ui/card.tsx";
@@ -65,7 +66,7 @@ export default function Write() {
         return () => {
             ignore = true;
         };
-    }, [currentId, setTitle, setCommentArea, setContent, setTagInput, setImageFiles]);
+    }, [currentId, setTitle, setCommentArea, setContent, setTagInput]);
 
     useEffect(() => {
         const handler = (e: BeforeUnloadEvent) => {
@@ -164,7 +165,7 @@ export default function Write() {
     };
 
     return (
-        <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
+        <Page>
             <Card>
                 <CardContent className="grid gap-4">
                     <div className="flex items-center gap-2">
@@ -208,8 +209,12 @@ export default function Write() {
                         <Input value={title} onChange={handleTitleChange} placeholder="给文章起个标题…" />
                     </div>
 
-                    <label className="flex cursor-pointer items-center gap-2 text-sm">
-                        <Checkbox checked={commentArea} onCheckedChange={(v) => setCommentArea(Boolean(v))} />
+                    <label htmlFor="comment-area" className="flex cursor-pointer items-center gap-2 text-sm">
+                        <Checkbox
+                            id="comment-area"
+                            checked={commentArea}
+                            onCheckedChange={(v) => setCommentArea(Boolean(v))}
+                        />
                         允许评论
                     </label>
 
@@ -227,6 +232,6 @@ export default function Write() {
                     </div>
                 </CardContent>
             </Card>
-        </div>
+        </Page>
     );
 }

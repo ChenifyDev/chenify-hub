@@ -1,9 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { Page } from "@/components/layout/Page.tsx";
 
 export function PostSkeleton() {
     return (
-        <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
+        <Page>
             <Card>
                 <CardContent className="grid gap-4">
                     <div className="flex items-center gap-2">
@@ -16,9 +17,9 @@ export function PostSkeleton() {
                 </CardContent>
             </Card>
             <div className="mt-4 grid gap-3">
-                <Skeleton className="h-32 w-full rounded-xl" />
-                <Skeleton className="h-32 w-full rounded-xl" />
+                <Skeleton className="h-32 w-full rounded-lg" />
+                <Skeleton className="h-32 w-full rounded-lg" />
             </div>
-        </div>
+        </Page>
     );
 }

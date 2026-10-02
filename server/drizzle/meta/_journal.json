@@ -1,34 +1,34 @@
 {
-  "version": "7",
-  "dialect": "sqlite",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "6",
-      "when": 1787795547439,
-      "tag": "0000_living_chameleon",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1787966043020,
-      "tag": "0001_cultured_peter_parker",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1787978635425,
-      "tag": "0002_overconfident_nuke",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1787999760040,
-      "tag": "0003_clean_puff_adder",
-      "breakpoints": true
-    }
-  ]
+    "version": "7",
+    "dialect": "sqlite",
+    "entries": [
+        {
+            "idx": 0,
+            "version": "6",
+            "when": 1787795547439,
+            "tag": "0000_living_chameleon",
+            "breakpoints": true
+        },
+        {
+            "idx": 1,
+            "version": "6",
+            "when": 1787966043020,
+            "tag": "0001_cultured_peter_parker",
+            "breakpoints": true
+        },
+        {
+            "idx": 2,
+            "version": "6",
+            "when": 1787978635425,
+            "tag": "0002_overconfident_nuke",
+            "breakpoints": true
+        },
+        {
+            "idx": 3,
+            "version": "6",
+            "when": 1787999760040,
+            "tag": "0003_clean_puff_adder",
+            "breakpoints": true
+        }
+    ]
 }

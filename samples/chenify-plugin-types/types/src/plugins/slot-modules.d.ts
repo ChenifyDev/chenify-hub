@@ -1,6 +1,14 @@
 export declare const PLUGIN_SLOT_MODULES: {
     readonly "button.tsx": readonly ["Button"];
-    readonly "card.tsx": readonly ["Card", "CardHeader", "CardFooter", "CardTitle", "CardAction", "CardDescription", "CardContent"];
+    readonly "card.tsx": readonly [
+        "Card",
+        "CardHeader",
+        "CardFooter",
+        "CardTitle",
+        "CardAction",
+        "CardDescription",
+        "CardContent",
+    ];
     readonly "badge.tsx": readonly ["Badge"];
     readonly "input.tsx": readonly ["Input"];
     readonly "label.tsx": readonly ["Label"];

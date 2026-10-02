@@ -3,6 +3,7 @@ import { Clock, Flame, Search } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import SearchBox from "@/components/search/SearchBox.tsx";
+import { Page, PageHeader } from "@/components/layout/Page.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
 
@@ -34,14 +35,8 @@ export default function SearchPage() {
     const tabKey = `${keyword}:${type}:${sort}`;
 
     return (
-        <div className="mx-auto w-full p-4 md:p-6">
-            <header className="mb-4">
-                <h1 className="flex items-center gap-2 text-xl font-semibold">
-                    <Search className="size-5" />
-                    搜索
-                </h1>
-                <p className="mt-1 text-sm text-muted-foreground">搜索社区里的帖子和用户</p>
-            </header>
+        <Page className="max-w-none">
+            <PageHeader icon={Search} title="搜索" description="搜索社区里的帖子和用户" />
 
             <SearchBox value={input} onValueChange={setInput} onSubmit={(k) => updateParam("q", k)} className="mb-4" />
 
@@ -87,6 +82,6 @@ export default function SearchPage() {
                     </TabsContent>
                 </Tabs>
             )}
-        </div>
+        </Page>
     );
 }

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button.tsx";
+import { Page, PageHeader } from "@/components/layout/Page.tsx";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
@@ -126,22 +127,22 @@ export default function PluginsPage() {
         }, "类型模板已开始下载，解压后放在插件目录隔壁");
 
     return (
-        <div className="mx-auto w-full max-w-4xl p-4 md:p-6">
-            <header className="mb-4 flex items-center justify-between gap-2">
-                <h1 className="flex items-center gap-2 text-xl font-semibold">
-                    <Puzzle className="size-5" />
-                    插件
-                </h1>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={busy}
-                    onClick={() => void run(load, "已重新读取插件列表")}
-                >
-                    <RefreshCw />
-                    重新读取
-                </Button>
-            </header>
+        <Page className="max-w-4xl">
+            <PageHeader
+                icon={Puzzle}
+                title="插件"
+                action={
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => void run(load, "已重新读取插件列表")}
+                    >
+                        <RefreshCw />
+                        重新读取
+                    </Button>
+                }
+            />
 
             <p className="mb-4 text-sm text-muted-foreground">
                 插件可以整体替换站点的界面组件。插件代码会在你的浏览器里执行，<strong>只请安装你信任的插件</strong>。
@@ -255,9 +256,9 @@ export default function PluginsPage() {
                         <CardDescription>出错的组件已自动降级为默认外观，修复插件文件后可重新安装。</CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-2">
-                        {errors.map((error, index) => (
+                        {errors.map((error) => (
                             <div
-                                key={`${error.at}-${index}`}
+                                key={`${error.pluginName}-${error.at}`}
                                 className="rounded-md border border-destructive/30 bg-destructive/5 p-2 text-sm"
                             >
                                 <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -300,7 +301,7 @@ export default function PluginsPage() {
                     ))}
                 </ul>
             )}
-        </div>
+        </Page>
     );
 }
 
@@ -339,7 +340,7 @@ function PluginRow({ plugin, index, total, busy, errorCount, onToggle, onMove, o
                                 {slots.map((slot) => (
                                     <code
                                         key={slot}
-                                        className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground"
+                                        className="rounded bg-muted px-1.5 py-0.5 font-mono text-2xs text-muted-foreground"
                                     >
                                         {slot}
                                     </code>

@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import { Calendar, Coins, UserCheck, UserPlus } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useLoginLink } from "@/hooks/useLoginLink.ts";
 import { toast } from "sonner";
 
 import PostCard from "@/components/forum/PostCard.tsx";
+import { Page } from "@/components/layout/Page.tsx";
 import SkeletonList from "@/components/forum/SkeletonList.tsx";
 import { UserAvatar } from "@/components/avatar.tsx";
 import { Button } from "@/components/ui/button.tsx";
@@ -96,9 +97,10 @@ function PrivacyRow({
     checked: boolean;
     onCheckedChange: (checked: boolean) => void;
 }) {
+    const id = useId();
     return (
-        <label className="flex cursor-pointer items-center gap-2 text-sm">
-            <Checkbox checked={checked} onCheckedChange={onCheckedChange} />
+        <label htmlFor={id} className="flex cursor-pointer items-center gap-2 text-sm">
+            <Checkbox id={id} checked={checked} onCheckedChange={onCheckedChange} />
             {label}
         </label>
     );
@@ -350,7 +352,7 @@ export default function Profile() {
 
     if (loading) {
         return (
-            <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
+            <Page>
                 <Card>
                     <CardContent className="flex items-center gap-4">
                         <Skeleton className="size-16 rounded-full" />
@@ -363,21 +365,21 @@ export default function Profile() {
                 <div className="mt-4">
                     <SkeletonList />
                 </div>
-            </div>
+            </Page>
         );
     }
     if (error || !space) {
         return (
-            <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
+            <Page>
                 <Empty text={error ?? "用户不存在"} />
-            </div>
+            </Page>
         );
     }
 
     const { user, counts } = space;
 
     return (
-        <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
+        <Page>
             <Card>
                 <CardHeader>
                     <div className="flex items-start justify-between gap-4">
@@ -416,7 +418,7 @@ export default function Profile() {
                                         {following ? <UserCheck /> : <UserPlus />}
                                         {following ? "取消关注" : me ? "关注" : "登录后关注"}
                                     </Button>
-                                    <Button variant="outline" className="text-amber-500" onClick={handleTipOpen}>
+                                    <Button variant="outline" className="text-coin" onClick={handleTipOpen}>
                                         <Coins />
                                         投币
                                     </Button>
@@ -447,6 +449,6 @@ export default function Profile() {
             <div className="mt-4">
                 <ProfileTabs key={id} userId={id} canPin={isSelf} />
             </div>
-        </div>
+        </Page>
     );
 }

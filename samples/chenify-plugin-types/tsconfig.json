@@ -2,10 +2,7 @@
     "$schema": "https://json.schemastore.org/tsconfig",
     "compilerOptions": {
         "target": "es2023",
-        "lib": [
-            "ES2023",
-            "DOM"
-        ],
+        "lib": ["ES2023", "DOM"],
         "module": "esnext",
         "moduleResolution": "bundler",
         "jsx": "react-jsx",
@@ -15,9 +12,7 @@
         "allowImportingTsExtensions": true,
         "verbatimModuleSyntax": true,
         "paths": {
-            "@/*": [
-                "./types/src/*"
-            ]
+            "@/*": ["./types/src/*"]
         }
     }
 }

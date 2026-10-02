@@ -1,18 +1,12 @@
 import { FileText } from "lucide-react";
 import PostDraftList from "@/components/forum/drafts/DraftList.tsx";
+import { Page, PageHeader } from "@/components/layout/Page.tsx";
 
 export default function Drafts() {
     return (
-        <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
-            <header className="mb-4">
-                <h1 className="flex items-center gap-2 text-xl font-semibold">
-                    <FileText className="size-5" />
-                    草稿管理
-                </h1>
-                <p className="mt-1 text-sm text-muted-foreground">管理你的未发布内容和已发布的帖子</p>
-            </header>
-
+        <Page>
+            <PageHeader icon={FileText} title="草稿管理" description="管理你的未发布内容和已发布的帖子" />
             <PostDraftList />
-        </div>
+        </Page>
     );
 }

@@ -2,7 +2,15 @@ import type { ComponentProps } from "react";
 import { PLUGIN_SLOT_MODULES } from "./slot-modules";
 import type { Badge } from "@/components/ui/badge";
 import type { Button } from "@/components/ui/button";
-import type { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import type {
+    Card,
+    CardAction,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
 import type { Checkbox } from "@/components/ui/checkbox";
 import type { Input } from "@/components/ui/input";
 import type { Label } from "@/components/ui/label";
@@ -22,15 +30,17 @@ export type PluginManifest = {
     description: string;
     ui: PluginManifestUi;
 };
-export type PluginFile = {
-    path: string;
-    kind: "text";
-    text: string;
-} | {
-    path: string;
-    kind: "binary";
-    bytes: ArrayBuffer;
-};
+export type PluginFile =
+    | {
+          path: string;
+          kind: "text";
+          text: string;
+      }
+    | {
+          path: string;
+          kind: "binary";
+          bytes: ArrayBuffer;
+      };
 export type StoredPlugin = {
     id: string;
     manifest: PluginManifest;
@@ -83,16 +93,17 @@ export type PluginSlotComponentOf<S extends PluginSlot> = PluginSlotComponents[S
 export type SlotProps<S extends PluginSlot> = ComponentProps<PluginSlotComponentOf<S>>;
 export type AnySlotComponent = PluginSlotComponentOf<PluginSlot>;
 type Assert<T extends true> = T;
-export type PluginSlotTableIsExhaustive = Assert<[
-    Exclude<PluginSlot, keyof PluginSlotComponents>,
-    Exclude<keyof PluginSlotComponents, PluginSlot>
-] extends [
-    never,
-    never
-] ? true : {
-    missing: Exclude<PluginSlot, keyof PluginSlotComponents>;
-    extra: Exclude<keyof PluginSlotComponents, PluginSlot>;
-}>;
+export type PluginSlotTableIsExhaustive = Assert<
+    [Exclude<PluginSlot, keyof PluginSlotComponents>, Exclude<keyof PluginSlotComponents, PluginSlot>] extends [
+        never,
+        never,
+    ]
+        ? true
+        : {
+              missing: Exclude<PluginSlot, keyof PluginSlotComponents>;
+              extra: Exclude<keyof PluginSlotComponents, PluginSlot>;
+          }
+>;
 export declare const SCRIPT_EXTENSIONS: readonly [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"];
 export declare const isTextPath: (path: string) => boolean;
 export declare const isScriptPath: (path: string) => boolean;

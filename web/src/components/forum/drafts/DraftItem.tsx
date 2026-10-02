@@ -45,8 +45,8 @@ export function DraftItem({
 
                 {draft.images.length > 0 && (
                     <div className="flex flex-wrap gap-2">
-                        {draft.images.map((src, i) => (
-                            <img key={i} src={src} alt={`图片 ${i + 1}`} className="size-16 rounded-md object-cover" />
+                        {draft.images.map((src) => (
+                            <img key={src} src={src} alt="帖子图片" className="size-16 rounded-md object-cover" />
                         ))}
                     </div>
                 )}

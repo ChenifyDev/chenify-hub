@@ -84,7 +84,11 @@ export default function CommentInput<T extends BaseComment<T>>({
                 </div>
             ) : (
                 <p className="text-sm text-muted-foreground">
-                    <button className="text-primary underline underline-offset-2" onClick={() => navigate(loginLink)}>
+                    <button
+                        type="button"
+                        className="text-primary underline underline-offset-2"
+                        onClick={() => navigate(loginLink)}
+                    >
                         登录
                     </button>
                     &nbsp;后参与评论

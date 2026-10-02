@@ -2,11 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "ChenifyHub UI 插件清单",
     "type": "object",
-    "required": [
-        "id",
-        "name",
-        "ui"
-    ],
+    "required": ["id", "name", "ui"],
     "properties": {
         "id": {
             "type": "string",
@@ -167,41 +163,14 @@
         "tabsTrigger"
     ],
     "x-slot-modules": {
-        "button.tsx": [
-            "Button"
-        ],
-        "card.tsx": [
-            "Card",
-            "CardHeader",
-            "CardFooter",
-            "CardTitle",
-            "CardAction",
-            "CardDescription",
-            "CardContent"
-        ],
-        "badge.tsx": [
-            "Badge"
-        ],
-        "input.tsx": [
-            "Input"
-        ],
-        "label.tsx": [
-            "Label"
-        ],
-        "separator.tsx": [
-            "Separator"
-        ],
-        "skeleton.tsx": [
-            "Skeleton"
-        ],
-        "checkbox.tsx": [
-            "Checkbox"
-        ],
-        "tabs.tsx": [
-            "Tabs",
-            "TabsList",
-            "TabsTrigger",
-            "TabsContent"
-        ]
+        "button.tsx": ["Button"],
+        "card.tsx": ["Card", "CardHeader", "CardFooter", "CardTitle", "CardAction", "CardDescription", "CardContent"],
+        "badge.tsx": ["Badge"],
+        "input.tsx": ["Input"],
+        "label.tsx": ["Label"],
+        "separator.tsx": ["Separator"],
+        "skeleton.tsx": ["Skeleton"],
+        "checkbox.tsx": ["Checkbox"],
+        "tabs.tsx": ["Tabs", "TabsList", "TabsTrigger", "TabsContent"]
     }
 }

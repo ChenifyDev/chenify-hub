@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Checkbox } from "@/components/ui/checkbox.tsx";
 import { Input } from "@/components/ui/input.tsx";
+import { Page, PageHeader } from "@/components/layout/Page.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import { updateProfile } from "@/lib/api";
 import { useUserStore } from "@/stores/useUser.ts";
@@ -100,14 +101,8 @@ export default function SettingsPage() {
     const showCurrent = !!user.avatar && !preview && !removeAvatar;
 
     return (
-        <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
-            <header className="mb-4">
-                <h1 className="flex items-center gap-2 text-xl font-semibold">
-                    <Settings className="size-5" />
-                    设置
-                </h1>
-                <p className="mt-1 text-sm text-muted-foreground">修改你的用户名、头像和背景图片</p>
-            </header>
+        <Page>
+            <PageHeader icon={Settings} title="设置" description="修改你的用户名、头像和背景图片" />
 
             <Card>
                 <CardHeader>
@@ -202,8 +197,12 @@ export default function SettingsPage() {
                                 )}
                             </div>
                             {bgUrl && (
-                                <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+                                <label
+                                    htmlFor="bg-blur"
+                                    className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground"
+                                >
                                     <Checkbox
+                                        id="bg-blur"
                                         checked={bgBlur}
                                         onCheckedChange={(checked) => setBgBlur(checked === true)}
                                         disabled={submitting}
@@ -234,6 +233,6 @@ export default function SettingsPage() {
                     </form>
                 </CardContent>
             </Card>
-        </div>
+        </Page>
     );
 }

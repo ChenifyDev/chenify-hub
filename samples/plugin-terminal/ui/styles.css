@@ -80,14 +80,11 @@ html:root {
 
     /* 字体：--font-heading 通过 var(--font-sans) 间接取值，一起换掉 */
     --font-sans:
-        ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", "Courier New",
-        monospace;
+        ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
     --font-heading:
-        ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", "Courier New",
-        monospace;
+        ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
     font-family:
-        ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", "Courier New",
-        monospace;
+        ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
     /* 整站等宽后字宽变大，压一点字距找回可读性 */
     letter-spacing: -0.01em;
 }
@@ -97,8 +94,7 @@ html:root {
 .font-sans,
 .font-heading {
     font-family:
-        ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", "Courier New",
-        monospace;
+        ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 /* ═══════════════ 2. 全局外观 ═══════════════ */
@@ -379,8 +375,7 @@ textarea,
     padding-bottom: var(--card-spacing, 1rem);
 }
 [data-slot="card-title"] {
-    font-family:
-        ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, monospace;
+    font-family: ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, monospace;
     font-weight: 700;
     letter-spacing: 0.04em;
 }

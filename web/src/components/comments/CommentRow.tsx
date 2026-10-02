@@ -46,12 +46,13 @@ function CommentRow<T extends BaseComment<T>>({
                 {parent && (
                     <div>
                         {" 回复了 "}
-                        <span
+                        <button
+                            type="button"
+                            className="underline-offset-2 hover:underline"
                             onClick={() => document.getElementById(`Tag-${parent.id}`)?.scrollIntoView()}
-                            className={"cursor-pointer"}
                         >
                             {parent.author.username}
-                        </span>
+                        </button>
                     </div>
                 )}
                 <span>·</span>

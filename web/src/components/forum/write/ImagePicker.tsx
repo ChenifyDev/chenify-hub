@@ -2,7 +2,6 @@ import { ImagePlus, X } from "lucide-react";
 import { useRef } from "react";
 
 import { Button } from "@/components/ui/button.tsx";
-import { cn } from "@/lib/utils.ts";
 
 type ImagePickerProps = {
     images: File[];
@@ -31,11 +30,11 @@ export function ImagePicker({ images, max, onPick, onRemove }: ImagePickerProps)
             {images.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                     {images.map((file, i) => (
-                        <div key={i} className="relative">
+                        <div key={`${file.name}-${file.size}-${file.lastModified}`} className="relative">
                             <img
                                 src={URL.createObjectURL(file)}
-                                alt={`图片 ${i + 1}`}
-                                className={cn("size-20 rounded-md object-cover")}
+                                alt={file.name}
+                                className="size-20 rounded-md object-cover"
                             />
                             <Button
                                 variant="destructive"

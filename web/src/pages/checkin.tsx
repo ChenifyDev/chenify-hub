@@ -4,6 +4,8 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent } from "@/components/ui/card.tsx";
+import Empty from "@/components/tab/Empty.tsx";
+import { Page, PageHeader } from "@/components/layout/Page.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
 import { checkIn, getCheckinStatus } from "@/lib/api";
 import { cn } from "@/lib/utils.ts";
@@ -22,7 +24,8 @@ function localTodayKey(): string {
 
 function StatusSkeleton() {
     return (
-        <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
+        <Page>
+            <PageHeader icon={CalendarCheck} title="每日签到" />
             <Card>
                 <CardContent className="grid justify-items-center gap-4 py-10">
                     <div className="h-12 w-12 animate-pulse rounded-full bg-muted" />
@@ -30,7 +33,7 @@ function StatusSkeleton() {
                     <div className="h-10 w-56 animate-pulse rounded bg-muted" />
                 </CardContent>
             </Card>
-        </div>
+        </Page>
     );
 }
 
@@ -102,10 +105,11 @@ export default function CheckinPage() {
     const todayKey = localTodayKey();
 
     return (
-        <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
+        <Page>
+            <PageHeader icon={CalendarCheck} title="每日签到" />
             <Card>
                 <CardContent className="grid justify-items-center gap-4 py-10">
-                    <div className="flex size-16 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500">
+                    <div className="flex size-16 items-center justify-center rounded-2xl bg-coin/15 text-coin">
                         <CalendarCheck className="size-8" />
                     </div>
                     <div className="grid justify-items-center gap-1 text-center">
@@ -122,9 +126,9 @@ export default function CheckinPage() {
                         {submitting ? "签到中…" : checkedToday ? "今日已签到" : "立即签到 +1"}
                     </Button>
                     <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <Coins className="size-4 text-amber-500" />
+                        <Coins className="size-4 text-coin" />
                         当前余额：
-                        <span className="font-semibold text-amber-500">{balance ?? "-"}</span>
+                        <span className="font-semibold text-coin">{balance ?? "-"}</span>
                     </p>
                 </CardContent>
             </Card>
@@ -134,7 +138,7 @@ export default function CheckinPage() {
             <Card>
                 <CardContent className="grid gap-1 pt-4">
                     {recent.length === 0 ? (
-                        <p className="py-6 text-center text-sm text-muted-foreground">还没有签到记录</p>
+                        <Empty icon={CalendarCheck} text="还没有签到记录" />
                     ) : (
                         recent.map((date) => (
                             <div key={date} className="flex items-center justify-between rounded-md px-2 py-2 text-sm">
@@ -142,7 +146,7 @@ export default function CheckinPage() {
                                 <span
                                     className={cn(
                                         "inline-flex items-center gap-1 font-medium",
-                                        date === todayKey && !checkedToday ? "text-muted-foreground" : "text-amber-500",
+                                        date === todayKey && !checkedToday ? "text-muted-foreground" : "text-coin",
                                     )}
                                 >
                                     <Coins className="size-3.5" />
@@ -153,6 +157,6 @@ export default function CheckinPage() {
                     )}
                 </CardContent>
             </Card>
-        </div>
+        </Page>
     );
 }

@@ -60,7 +60,7 @@ export function PostActionsBar({
             <Button
                 variant="ghost"
                 size="sm"
-                className="text-amber-500"
+                className="text-coin"
                 disabled={reactBusy}
                 onClick={onTip}
                 title="投 1 枚硬币，作者获得 0.1 枚"

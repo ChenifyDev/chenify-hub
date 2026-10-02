@@ -16,6 +16,14 @@
 @source inline("transition-{all,colors,opacity,shadow,transform,none} duration-{75,100,150,200,300,500,700,1000} ease-{linear,in,out,in-out} delay-{75,150,300,500,700,1000} animate-{spin,ping,pulse,bounce,float,none} motion-safe: motion-reduce:");
 @source inline("border{,-}{2,4,8} divide-{x,y} ring-{0,1,2,3,4,8} outline-{0,1,2,4,8} blur-{none,sm,md,lg,xl,2xl,3xl} backdrop-blur-{none,sm,md,lg,xl,2xl} drop-shadow-{none,sm,md,lg,xl,2xl} mix-blend-{normal,multiply,screen,overlay,darken,lighten}");
 
+@theme {
+    --spacing: 0.27rem;
+    --text-xs: 0.8125rem;
+    --text-xs--line-height: 1.45;
+    --text-sm: 0.9375rem;
+    --text-sm--line-height: 1.55;
+}
+
 @theme inline {
     --font-heading: var(--font-sans);
     --font-sans: "Geist Variable", sans-serif;
@@ -50,6 +58,10 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
+    --color-coin: var(--coin);
+    --color-medal-gold: var(--medal-gold);
+    --color-medal-silver: var(--medal-silver);
+    --color-medal-bronze: var(--medal-bronze);
     --radius-sm: calc(var(--radius) * 0.6);
     --radius-md: calc(var(--radius) * 0.8);
     --radius-lg: var(--radius);
@@ -57,10 +69,12 @@
     --radius-2xl: calc(var(--radius) * 1.8);
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
+    --text-2xs: 0.6875rem;
+    --text-2xs--line-height: 1.4;
 }
 
 :root {
-    --background: oklch(1 0 0);
+    --background: oklch(0.985 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
@@ -68,11 +82,11 @@
     --popover-foreground: oklch(0.145 0 0);
     --primary: oklch(0.205 0 0);
     --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
+    --secondary: oklch(0.962 0 0);
     --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
+    --muted: oklch(0.962 0 0);
+    --muted-foreground: oklch(0.512 0 0);
+    --accent: oklch(0.962 0 0);
     --accent-foreground: oklch(0.205 0 0);
     --destructive: oklch(0.577 0.245 27.325);
     --border: oklch(0.922 0 0);
@@ -84,11 +98,15 @@
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
+    --coin: oklch(0.53 0.13 70);
+    --medal-gold: oklch(0.54 0.14 85);
+    --medal-silver: oklch(0.52 0 0);
+    --medal-bronze: oklch(0.52 0.11 55);
+    --sidebar: oklch(1 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
     --sidebar-primary: oklch(0.205 0 0);
     --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent: oklch(0.962 0 0);
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
@@ -107,6 +125,10 @@
     --secondary-foreground: oklch(0.985 0 0);
     --muted: oklch(0.269 0 0);
     --muted-foreground: oklch(0.708 0 0);
+    --coin: oklch(0.8 0.14 80);
+    --medal-gold: oklch(0.82 0.15 85);
+    --medal-silver: oklch(0.78 0 0);
+    --medal-bronze: oklch(0.75 0.12 60);
     --accent: oklch(0.269 0 0);
     --accent-foreground: oklch(0.985 0 0);
     --destructive: oklch(0.704 0.191 22.216);
@@ -226,33 +248,24 @@ body.app-bg-active [data-slot="tabs-list"] {
     .markdown-body > :last-child {
         margin-bottom: 0;
     }
-    .markdown-body p,
-    .markdown-body ul,
-    .markdown-body ol,
-    .markdown-body blockquote,
-    .markdown-body pre,
-    .markdown-body table,
-    .markdown-body h1,
-    .markdown-body h2,
-    .markdown-body h3,
-    .markdown-body h4,
-    .markdown-body h5,
-    .markdown-body h6 {
-        margin: 0.75em 0;
+    .markdown-body :is(p, ul, ol, blockquote, pre, table, hr) {
+        margin: 0.85em 0;
+    }
+    .markdown-body :is(h1, h2, h3, h4, h5, h6) {
+        @apply font-semibold leading-snug tracking-tight;
+        margin: 1.5em 0 0.45em;
     }
     .markdown-body h1 {
-        @apply text-2xl font-semibold;
+        font-size: 1.25rem;
     }
     .markdown-body h2 {
-        @apply text-xl font-semibold;
+        font-size: 1.0625rem;
     }
     .markdown-body h3 {
-        @apply text-lg font-semibold;
+        font-size: 1rem;
     }
-    .markdown-body h4,
-    .markdown-body h5,
-    .markdown-body h6 {
-        @apply text-base font-semibold;
+    .markdown-body :is(h4, h5, h6) {
+        @apply text-sm text-muted-foreground;
     }
     .markdown-body ul {
         @apply list-disc pl-6;
@@ -273,7 +286,8 @@ body.app-bg-active [data-slot="tabs-list"] {
         @apply border-l-2 border-border pl-4 text-muted-foreground;
     }
     .markdown-body code {
-        @apply rounded bg-muted px-1 py-0.5 text-[0.85em];
+        @apply rounded bg-muted px-1 py-0.5;
+        font-size: 0.8125rem;
     }
     .markdown-body pre {
         @apply overflow-x-auto rounded-lg;
@@ -348,7 +362,7 @@ body.app-bg-active [data-slot="tabs-list"] {
         @apply border border-border px-2 py-1 text-left;
     }
     .markdown-body th {
-        @apply bg-muted;
+        @apply bg-muted font-semibold;
     }
     .markdown-body img {
         @apply my-2 max-w-full rounded-md;
@@ -403,7 +417,22 @@ body.app-bg-active [data-slot="tabs-list"] {
     }
 
     .tiptap {
-        @apply min-h-[50vh] px-4 py-3 text-base leading-relaxed outline-none;
+        @apply min-h-[50vh] px-4 py-3 outline-none;
+    }
+
+    .toc-item {
+        padding-left: 0.5rem;
+    }
+    .toc-item[data-depth="2"] {
+        padding-left: 1.25rem;
+    }
+    .toc-item[data-depth="3"] {
+        padding-left: 2rem;
+    }
+    .toc-item[data-depth="4"],
+    .toc-item[data-depth="5"],
+    .toc-item[data-depth="6"] {
+        padding-left: 2.75rem;
     }
 
     .tiptap p.is-editor-empty:first-child::before {

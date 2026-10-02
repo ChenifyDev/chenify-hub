@@ -12,6 +12,7 @@ import { PostActionsBar } from "@/components/forum/PostActionsBar.tsx";
 import { PostDetailHeader } from "@/components/forum/PostDetailHeader.tsx";
 import { PostSkeleton } from "@/components/forum/PostSkeleton.tsx";
 import Empty from "@/components/tab/Empty.tsx";
+import { Page } from "@/components/layout/Page.tsx";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
 import { useCopyLink } from "@/hooks/useCopyLink.ts";
@@ -224,9 +225,9 @@ export default function PostDetail() {
     if (loading) return <PostSkeleton />;
     if (error || !post) {
         return (
-            <div className="mx-auto w-full max-w-3xl p-4 text-center text-sm text-muted-foreground md:p-6">
-                {error ?? "帖子不存在"}
-            </div>
+            <Page>
+                <Empty text={error ?? "帖子不存在"} />
+            </Page>
         );
     }
 
@@ -234,7 +235,7 @@ export default function PostDetail() {
     const following = post.is_following_author;
 
     return (
-        <div className="relative mx-auto w-full max-w-3xl p-4 md:p-6">
+        <Page className="relative">
             <PostAstTree content={post.content} />
             <Card>
                 <CardContent className="grid gap-4">
@@ -255,11 +256,11 @@ export default function PostDetail() {
 
                     {post.images.length > 0 && (
                         <div className="flex flex-wrap gap-2">
-                            {post.images.map((src, i) => (
+                            {post.images.map((src) => (
                                 <img
-                                    key={i}
+                                    key={src}
                                     src={src}
-                                    alt={`图片 ${i + 1}`}
+                                    alt="帖子图片"
                                     className="max-h-96 w-auto rounded-md object-cover"
                                 />
                             ))}
@@ -333,6 +334,6 @@ export default function PostDetail() {
             ) : (
                 <Empty text={isAuthor ? "评论已关闭，点击上方「开启评论」可恢复" : "作者已关闭了评论"} />
             )}
-        </div>
+        </Page>
     );
 }

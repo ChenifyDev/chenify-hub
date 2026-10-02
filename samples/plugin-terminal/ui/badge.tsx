@@ -18,7 +18,9 @@ export default function Badge(props: SlotProps<"badge">) {
     const warn = props.variant === "destructive";
     return (
         <Host {...rest}>
-            <Tag>{warn ? "!!" : ""}[{children}]</Tag>
+            <Tag>
+                {warn ? "!!" : ""}[{children}]
+            </Tag>
         </Host>
     );
 }

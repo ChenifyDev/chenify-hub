@@ -86,11 +86,11 @@ export function PostCard({
 
                 {postState.images.length > 0 && (
                     <div className="flex flex-wrap gap-2">
-                        {postState.images.map((src, i) => (
+                        {postState.images.map((src) => (
                             <img
-                                key={i}
+                                key={src}
                                 src={src}
-                                alt={`图片 ${i + 1}`}
+                                alt="帖子图片"
                                 className={cn("rounded-md object-cover", compact ? "size-24" : "max-h-96 w-auto")}
                             />
                         ))}
@@ -137,7 +137,7 @@ export function PostCard({
                         size={"xs"}
                         onClick={handleTip}
                         disabled={reactBusy}
-                        className="inline-flex items-center gap-1 text-amber-500"
+                        className="inline-flex items-center gap-1 text-coin"
                     >
                         <Coins className="size-3.5" />
                         {postState.coins_count * 10}

@@ -183,6 +183,42 @@ export const Toc = Node.create({
     markdownTokenizer: token("toc", "block", "[toc]", /^\[TOC\][ \t]*(?:\n|$)/i),
 });
 
+function toHex(color: string): string {
+    const ctx = document.createElement("canvas").getContext("2d");
+    if (!ctx) return color;
+    ctx.fillStyle = "#000000";
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, 1, 1);
+    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+    return `#${[r, g, b].map((n) => n.toString(16).padStart(2, "0")).join("")}`;
+}
+
+function mermaidOptions() {
+    const root = document.documentElement;
+    const rs = getComputedStyle(root);
+    const v = (name: string) => toHex(rs.getPropertyValue(name).trim());
+    return {
+        startOnLoad: false,
+        securityLevel: "strict" as const,
+        theme: "base" as const,
+        themeVariables: {
+            darkMode: root.classList.contains("dark"),
+            background: v("--card"),
+            primaryColor: v("--muted"),
+            primaryBorderColor: v("--border"),
+            primaryTextColor: v("--foreground"),
+            secondaryColor: v("--secondary"),
+            tertiaryColor: v("--card"),
+            lineColor: v("--muted-foreground"),
+            edgeLabelBackground: v("--card"),
+            clusterBkg: v("--muted"),
+            clusterBorder: v("--border"),
+            fontFamily: "Geist Variable, sans-serif",
+            fontSize: "14px",
+        },
+    };
+}
+
 export const Mermaid = Node.create({
     name: "mermaid",
     group: "block",
@@ -212,7 +248,7 @@ export const Mermaid = Node.create({
             void import("mermaid")
                 .then(async (module) => {
                     const mermaid = module.default;
-                    mermaid.initialize({ startOnLoad: false, securityLevel: "strict" });
+                    mermaid.initialize(mermaidOptions());
                     const { svg } = await mermaid.render(`mermaid-${crypto.randomUUID()}`, code);
                     if (alive) diagram.innerHTML = svg;
                 })

@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 
 import PostCard from "@/components/forum/PostCard.tsx";
 import FeedList from "@/components/forum/FeedList.tsx";
+import { Page, PageHeader } from "@/components/layout/Page.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { listPosts, listTags, type Post } from "@/lib/api";
 import { cn } from "@/lib/utils.ts";
@@ -50,14 +51,8 @@ export default function Posts() {
     }, []);
 
     return (
-        <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
-            <header className="mb-4">
-                <h1 className="flex items-center gap-2 text-xl font-semibold">
-                    <Signpost className="size-5" />
-                    帖子
-                </h1>
-                <p className="mt-1 text-sm text-muted-foreground">按热度或时间浏览社区里的好内容</p>
-            </header>
+        <Page>
+            <PageHeader icon={Signpost} title="帖子" description="按热度或时间浏览社区里的好内容" />
 
             <div className="mb-3 flex items-center gap-2">
                 <Button size="sm" variant={sort === "hot" ? "default" : "outline"} onClick={() => patch("sort", "hot")}>
@@ -77,6 +72,7 @@ export default function Posts() {
             {tags.length > 0 && (
                 <div className="mb-3 flex flex-wrap items-center gap-1.5">
                     <button
+                        type="button"
                         className={cn(
                             "rounded-md px-2 py-0.5 text-xs",
                             tag === null ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
@@ -88,6 +84,7 @@ export default function Posts() {
                     {tags.map((t) => (
                         <button
                             key={t}
+                            type="button"
                             className={cn(
                                 "rounded-md px-2 py-0.5 text-xs",
                                 tag === t ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
@@ -101,6 +98,6 @@ export default function Posts() {
             )}
 
             <PostFeed key={`${sort}:${tag ?? ""}`} sort={sort} tag={tag} />
-        </div>
+        </Page>
     );
 }

@@ -44,6 +44,20 @@
                     }
                 }
             }
+        },
+        {
+            "includes": ["web/src/components/ui/**"],
+            "linter": {
+                "rules": {
+                    "a11y": {
+                        "noLabelWithoutControl": "off",
+                        "useSemanticElements": "off"
+                    },
+                    "correctness": {
+                        "useExhaustiveDependencies": "off"
+                    }
+                }
+            }
         }
     ]
 }

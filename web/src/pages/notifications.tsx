@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { NotificationRow } from "@/components/notifications/NotificationRow.tsx";
 import { notificationLink } from "@/components/notifications/notificationLink.ts";
 import FeedList from "@/components/forum/FeedList.tsx";
+import { Page, PageHeader } from "@/components/layout/Page.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { useInfiniteList } from "@/hooks/useInfiniteList.ts";
 import { listNotifications, markNotificationsRead, type AppNotification } from "@/lib/api";
@@ -52,19 +53,19 @@ export default function NotificationsPage() {
     };
 
     return (
-        <div className="mx-auto w-full p-4 md:p-6">
-            <header className="mb-4 flex items-center justify-between">
-                <h1 className="flex items-center gap-2 text-xl font-semibold">
-                    <Bell className="size-5" />
-                    消息中心
-                </h1>
-                {unread > 0 && (
-                    <Button size="sm" variant="outline" onClick={() => void handleMarkAll()}>
-                        <CheckCheck />
-                        全部已读 ({unread})
-                    </Button>
-                )}
-            </header>
+        <Page className="max-w-none">
+            <PageHeader
+                icon={Bell}
+                title="消息中心"
+                action={
+                    unread > 0 && (
+                        <Button size="sm" variant="outline" onClick={() => void handleMarkAll()}>
+                            <CheckCheck />
+                            全部已读 ({unread})
+                        </Button>
+                    )
+                }
+            />
 
             <FeedList feed={feed} empty="暂无消息">
                 {(notification) => (
@@ -76,6 +77,6 @@ export default function NotificationsPage() {
                     />
                 )}
             </FeedList>
-        </div>
+        </Page>
     );
 }

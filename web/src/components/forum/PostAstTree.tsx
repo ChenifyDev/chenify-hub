@@ -40,13 +40,13 @@ function TocList({ nodes }: { nodes: DocHeading[] }) {
                 <button
                     key={node.id}
                     type="button"
+                    data-depth={node.depth}
                     onClick={() => {
                         setActiveId(node.id);
                         document.getElementById(node.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
                     }}
-                    style={{ paddingLeft: `${(node.depth - 1) * 12 + 8}px` }}
                     className={cn(
-                        "truncate rounded-md px-2 py-1 text-left text-[13px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                        "toc-item truncate rounded-md pr-2 py-1 text-left text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
                         activeId === node.id && "bg-muted text-foreground",
                     )}
                 >

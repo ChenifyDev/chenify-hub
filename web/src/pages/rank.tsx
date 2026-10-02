@@ -16,6 +16,8 @@ import { useLazyFeed } from "@/hooks/useLazyFeed.ts";
 import type { TabData } from "@/types/tab.ts";
 import { useInfiniteList } from "@/hooks/useInfiniteList.ts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { Page, PageHeader } from "@/components/layout/Page.tsx";
+import { Trophy } from "lucide-react";
 import { UserAvatar } from "@/components/avatar.tsx";
 
 const LIMIT = 10;
@@ -91,7 +93,7 @@ function Podium({ top, label }: { top: PodiumUser[]; label: string }) {
                                     {user.username}
                                 </div>
                                 <div className="flex flex-col sm:flex-row items-center justify-center gap-0 sm:gap-1">
-                                    <span className="text-[10px] sm:text-sm text-muted-foreground">{label}</span>
+                                    <span className="text-2xs sm:text-sm text-muted-foreground">{label}</span>
                                     <span className={`font-bold ${slot.count}`}>{user.value}</span>
                                 </div>
                             </CardContent>
@@ -106,9 +108,9 @@ function Podium({ top, label }: { top: PodiumUser[]; label: string }) {
 }
 
 function rankColor(rank: number): string {
-    if (rank === 1) return "text-amber-500";
-    if (rank === 2) return "text-slate-400";
-    if (rank === 3) return "text-orange-600";
+    if (rank === 1) return "text-medal-gold";
+    if (rank === 2) return "text-medal-silver";
+    if (rank === 3) return "text-medal-bronze";
     return "text-muted-foreground";
 }
 
@@ -307,8 +309,9 @@ function RankTabs() {
 
 export default function RankPage() {
     return (
-        <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
+        <Page>
+            <PageHeader icon={Trophy} title="排行榜" description="看看谁在社区里最有存在感" />
             <RankTabs />
-        </div>
+        </Page>
     );
 }

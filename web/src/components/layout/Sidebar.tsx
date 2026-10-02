@@ -184,12 +184,12 @@ export default function AppSidebar() {
                                         <span className="relative inline-flex">
                                             <CalendarCheck />
                                             {checkedToday === false && (
-                                                <span className="absolute -top-0.5 -right-0.5 size-1.5 rounded-full bg-amber-500 group-data-[collapsible=icon]:block hidden" />
+                                                <span className="absolute -top-0.5 -right-0.5 size-1.5 rounded-full bg-coin group-data-[collapsible=icon]:block hidden" />
                                             )}
                                         </span>
                                         <span>每日签到</span>
                                         {checkedToday === false && (
-                                            <span className="ml-auto rounded-full bg-amber-500 px-1.5 text-[10px] font-medium text-white group-data-[collapsible=icon]:hidden">
+                                            <span className="ml-auto rounded-full bg-coin/15 px-1.5 text-2xs font-medium text-coin group-data-[collapsible=icon]:hidden">
                                                 签到
                                             </span>
                                         )}
@@ -230,14 +230,14 @@ export default function AppSidebar() {
                                         <span className="relative inline-flex">
                                             <Bell />
                                             {unread > 0 && (
-                                                <span className="absolute -top-1.5 -right-1.5 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-medium text-destructive-foreground">
+                                                <span className="absolute -top-1.5 -right-1.5 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-2xs font-medium text-destructive-foreground">
                                                     {unread > 99 ? "99+" : unread}
                                                 </span>
                                             )}
                                         </span>
                                         <span>消息</span>
                                         {unread > 0 && (
-                                            <span className="ml-auto rounded-full bg-destructive px-1.5 text-[10px] font-medium text-destructive-foreground group-data-[collapsible=icon]:hidden">
+                                            <span className="ml-auto rounded-full bg-destructive px-1.5 text-2xs font-medium text-destructive-foreground group-data-[collapsible=icon]:hidden">
                                                 {unread > 99 ? "99+" : unread}
                                             </span>
                                         )}
@@ -260,15 +260,20 @@ export default function AppSidebar() {
                             "group-data-[collapsible=icon]:hidden",
                         )}
                     >
-                        <p
-                            className={cn("truncate text-sm font-medium", user && "cursor-pointer")}
-                            onClick={() => user && navigate(`/users/${user?.id}`)}
-                        >
-                            {user?.username ?? "未登录"}
-                        </p>
+                        {user ? (
+                            <button
+                                type="button"
+                                className="truncate text-left text-sm font-medium"
+                                onClick={() => navigate(`/users/${user.id}`)}
+                            >
+                                {user.username}
+                            </button>
+                        ) : (
+                            <p className="truncate text-sm font-medium">未登录</p>
+                        )}
                         <p className="truncate text-xs text-muted-foreground">{user?.email ?? "欢迎来到 ChenifyHub"}</p>
                         {user && balance != null && (
-                            <p className="flex items-center gap-1 truncate text-xs text-amber-500">
+                            <p className="flex items-center gap-1 truncate text-xs text-coin">
                                 <Coins className="size-3 shrink-0" />
                                 {Math.round(balance * 100) / 100}
                             </p>
