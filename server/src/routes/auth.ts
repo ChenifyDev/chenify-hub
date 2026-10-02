@@ -1,18 +1,19 @@
 import { getStorage, toPublicUser } from "../storage";
 import { signToken } from "../jwt";
-import { jsonError, getAuthUser } from "./util";
+import { FORM_REQUIRED, jsonError, getAuthUser } from "./util";
 import { saveAvatar, type RouteMap } from "../utils";
-import { serializeSessionCookie, serializeClearSessionCookie } from "../utils/cookie";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const routes = {
-    "/api/passport/register": async (req) => {
+    "/api/auth/register": async (req) => {
         const storage = getStorage();
-        const form = await req.formData();
-        const username = form.get("username")?.toString().trim() ?? "";
-        const email = form.get("email")?.toString().trim().toLowerCase() ?? "";
-        const password = form.get("password")?.toString() ?? "";
+        const form = await req.formData().catch(() => null);
+        if (!form) return jsonError(400, FORM_REQUIRED);
+        const field = (name: string) => form.get(name)?.toString().trim() ?? "";
+        const username = field("username");
+        const email = field("email").toLowerCase();
+        const password = field("password");
 
         if (!username || !email || !password) {
             return jsonError(400, "用户名、密码、邮箱均为必填项");
@@ -26,12 +27,13 @@ export const routes = {
         if (!EMAIL_REGEX.test(email)) {
             return jsonError(400, "邮箱格式不正确");
         }
-        if (await storage.users.findUserByEmail(email)) {
-            return jsonError(409, "该邮箱已被注册");
-        }
-        if (await storage.users.findUserByUsername(username)) {
-            return jsonError(409, "该用户名已被使用");
-        }
+
+        const [emailTaken, nameTaken] = await Promise.all([
+            storage.users.findUserByEmail(email),
+            storage.users.findUserByUsername(username),
+        ]);
+        if (emailTaken) return jsonError(409, "该邮箱已被注册");
+        if (nameTaken) return jsonError(409, "该用户名已被使用");
 
         let avatar: string | null = null;
         const avatarFile = form.get("avatar");
@@ -50,41 +52,26 @@ export const routes = {
         return Response.json(user, { status: 201 });
     },
 
-    "/api/passport/login": async (req) => {
-        const storage = getStorage();
+    "/api/auth/login": async (req) => {
         const body = (await req.json().catch(() => null)) as { login?: string; password?: string } | null;
         const login = body?.login?.trim() ?? "";
         const password = body?.password ?? "";
-
         if (!login || !password) {
             return jsonError(400, "用户名和密码均为必填项");
         }
 
-        const user = await storage.users.findUserByUsernameOrEmail(login);
-        if (!user) {
-            return jsonError(401, "用户名或密码错误");
-        }
-        const valid = await Bun.password.verify(password, user.password_hash);
-        if (!valid) {
+        const user = await getStorage().users.findUserByUsernameOrEmail(login);
+        if (!user || !(await Bun.password.verify(password, user.password_hash))) {
             return jsonError(401, "用户名或密码错误");
         }
 
         const token = await signToken({ sub: user.id, username: user.username, email: user.email });
-        return Response.json(
-            { token, user: toPublicUser(user) },
-            { headers: { "Set-Cookie": serializeSessionCookie(token, req) } },
-        );
+        return Response.json({ token, user: toPublicUser(user) });
     },
 
-    "/api/passport/logout": async () => {
-        return Response.json({ success: true }, { headers: { "Set-Cookie": serializeClearSessionCookie() } });
-    },
-
-    "/api/passport/me": async (req) => {
+    "/api/auth/me": async (req) => {
         const user = await getAuthUser(req);
-        if (!user) {
-            return jsonError(401, "未提供有效登录凭证");
-        }
+        if (!user) return jsonError(401, "未提供有效登录凭证");
         return Response.json(user);
     },
 } satisfies RouteMap;

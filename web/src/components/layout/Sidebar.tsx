@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 
-import { clearToken, getCheckinStatus, logout } from "@/lib/api";
+import { clearToken, getCheckinStatus } from "@/lib/api";
 import { useUserStore } from "@/stores/useUser.ts";
 import { useCoinsStore } from "@/stores/useCoins.ts";
 import { useUnreadStore } from "@/stores/useUnread.ts";
@@ -81,8 +81,7 @@ export default function AppSidebar() {
         };
     }, [user, setCheckedToday, refreshUnread]);
 
-    const handleLogout = async () => {
-        await logout().catch(() => {});
+    const handleLogout = () => {
         clearToken();
         clearAllDrafts();
         setUser(null);

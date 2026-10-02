@@ -57,11 +57,11 @@
 
 ## 接口说明
 
-### 一、认证（Passport）
+### 一、认证（Auth）
 
 #### 注册
 
-`POST /api/passport/register`
+`POST /api/auth/register`
 
 无需登录。请求体为 `multipart/form-data`：
 
@@ -88,7 +88,7 @@
 
 #### 登录
 
-`POST /api/passport/login`
+`POST /api/auth/login`
 
 无需登录。请求体为 `application/json`：
 
@@ -116,7 +116,7 @@
 
 #### 当前用户
 
-`GET /api/passport/me`
+`GET /api/auth/me`
 
 需要登录。返回当前登录用户的 `UserPublic`：
 
@@ -132,15 +132,7 @@
 
 错误：`401` 未提供有效登录凭证。
 
-#### 退出登录
-
-`POST /api/passport/logout`
-
-需要登录。清除服务端会话 Cookie，并返回：
-
-```json
-{ "success": true }
-```
+> 服务端不签发 Cookie、也不保存会话，登出即由客户端丢弃 JWT；已签发的 JWT 在有效期内始终可用（`JWT_EXPIRES_DAYS`，默认 7 天）。
 
 #### 修改个人资料
 
@@ -171,8 +163,8 @@ Chenify 同时是一个 OAuth 2.0 / OIDC 提供方，第三方应用可以通过
 `GET /oauth/authorize?response_type=code&client_id=<client_id>&redirect_uri=<redirect_uri>&scope=<scope>&state=<state>&code_challenge=<challenge>&code_challenge_method=S256`
 
 - 用户未登录时，会重定向到前端登录页（由 `OAUTH_LOGIN_URL` 配置），并携带 `return_to` 参数。
-- 登录完成后，前端会回跳到该授权端点；服务端校验通过后会生成授权码，并 302 跳转到 `redirect_uri`。
-- 授权端点同时接受 `Authorization: Bearer <JWT>` 请求头和名为 `chenify_session` 的 HttpOnly Cookie。
+- 凭据只接受 `Authorization: Bearer <JWT>`。浏览器直接跳转（如 Gitea 等常规 OAuth 客户端）时，已登录的会话 Cookie 不再参与，因此纯 SPA 需要在登录后带 Bearer 请求该端点。
+- 请求头含 `Accept: application/json` 时，成功返回 `{ "redirect": "<redirect_uri>" }`、未登录返回 `401`，供前端自行跳转；否则维持 302 行为。
 
 Token 端点：
 
@@ -836,10 +828,10 @@ Token 端点：
 
 | 方法   | 路径                                | 认证         |
 | ------ | ----------------------------------- | ------------ |
-| POST   | `/api/passport/register`            | 否           |
-| POST   | `/api/passport/login`               | 否           |
-| POST   | `/api/passport/logout`              | 是           |
-| GET    | `/api/passport/me`                  | 是           |
+| POST   | `/api/auth/register`            | 否           |
+| POST   | `/api/auth/login`               | 否           |
+| POST   | `/api/auth/logout`              | 是           |
+| GET    | `/api/auth/me`                  | 是           |
 | GET    | `/.well-known/openid-configuration` | 否           |
 | GET    | `/oauth/authorize`                  | 否（需会话） |
 | POST   | `/oauth/token`                      | 否           |

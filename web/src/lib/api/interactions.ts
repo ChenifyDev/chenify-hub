@@ -1,43 +1,16 @@
-import { authHeaders, request } from "./http";
+import { request } from "./http";
 
-export function toggleFavorite(postId: number): Promise<{ favorited: boolean; favorites_count: number }> {
-    return request<{ favorited: boolean; favorites_count: number }>(`/posts/${postId}/favorite`, {
-        method: "POST",
-        headers: authHeaders(),
-    });
-}
+type Like = { liked: boolean; likes_count: number };
+type Favorite = { favorited: boolean; favorites_count: number };
+type Follow = { following: boolean; followers_count: number };
 
-export function unFavorite(postId: number): Promise<{ favorited: boolean; favorites_count: number }> {
-    return request<{ favorited: boolean; favorites_count: number }>(`/posts/${postId}/favorite`, {
-        method: "DELETE",
-        headers: authHeaders(),
-    });
-}
+const flip = <T>(url: string, method: "POST" | "DELETE") => request<T>(url, { method });
 
-export function toggleLike(postId: number): Promise<{ liked: boolean; likes_count: number }> {
-    return request<{ liked: boolean; likes_count: number }>(`/posts/${postId}/like`, {
-        method: "POST",
-        headers: authHeaders(),
-    });
-}
+export const toggleLike = (postId: number) => flip<Like>(`/posts/${postId}/like`, "POST");
+export const unLike = (postId: number) => flip<Like>(`/posts/${postId}/like`, "DELETE");
 
-export function unLike(postId: number): Promise<{ liked: boolean; likes_count: number }> {
-    return request<{ liked: boolean; likes_count: number }>(`/posts/${postId}/like`, {
-        method: "DELETE",
-        headers: authHeaders(),
-    });
-}
+export const toggleFavorite = (postId: number) => flip<Favorite>(`/posts/${postId}/favorite`, "POST");
+export const unFavorite = (postId: number) => flip<Favorite>(`/posts/${postId}/favorite`, "DELETE");
 
-export function toggleFollow(userId: number): Promise<{ following: boolean; followers_count: number }> {
-    return request<{ following: boolean; followers_count: number }>(`/users/${userId}/follow`, {
-        method: "POST",
-        headers: authHeaders(),
-    });
-}
-
-export function unFollow(userId: number): Promise<{ following: boolean; followers_count: number }> {
-    return request<{ following: boolean; followers_count: number }>(`/users/${userId}/follow`, {
-        method: "DELETE",
-        headers: authHeaders(),
-    });
-}
+export const toggleFollow = (userId: number) => flip<Follow>(`/users/${userId}/follow`, "POST");
+export const unFollow = (userId: number) => flip<Follow>(`/users/${userId}/follow`, "DELETE");

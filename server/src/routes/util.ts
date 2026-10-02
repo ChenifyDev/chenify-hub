@@ -1,24 +1,20 @@
 import { getStorage } from "../storage";
 import type { UserPublic } from "../storage";
 import { verifyToken } from "../jwt";
-import { getSessionTokenFromRequest } from "../utils/cookie";
+
+export const FORM_REQUIRED = "请求体必须是 multipart/form-data 表单";
 
 export function jsonError(status: number, message: string): Response {
     return Response.json({ message }, { status });
 }
 
-export function extractBearer(req: Request): string | null {
+export function extractToken(req: Request): string | null {
     const auth = req.headers.get("authorization");
-    if (!auth?.startsWith("Bearer ")) return null;
-    return auth.slice(7);
-}
-
-export function extractAuthToken(req: Request): string | null {
-    return extractBearer(req) ?? getSessionTokenFromRequest(req);
+    return auth?.startsWith("Bearer ") ? auth.slice(7) : null;
 }
 
 export async function getAuthUser(req: Request): Promise<UserPublic | null> {
-    const token = extractAuthToken(req);
+    const token = extractToken(req);
     if (!token) return null;
     const payload = await verifyToken(token);
     if (!payload) return null;

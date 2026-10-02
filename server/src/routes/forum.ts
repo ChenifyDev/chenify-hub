@@ -1,5 +1,5 @@
 import { getStorage } from "../storage";
-import { getAuthUser, jsonError, parsePagination } from "./util";
+import { FORM_REQUIRED, getAuthUser, jsonError, parsePagination } from "./util";
 import { saveAvatar, type RouteMap } from "../utils";
 import { getCommentArea, setCommentArea } from "../utils/frontmatter";
 
@@ -77,7 +77,8 @@ function numericIdError(raw: string): number | Response {
 async function parseDraftForm(
     req: Request,
 ): Promise<{ content: string; tags: string[]; imageFiles: File[] } | { error: Response }> {
-    const form = await req.formData();
+    const form = await req.formData().catch(() => null);
+    if (!form) return { error: jsonError(400, FORM_REQUIRED) };
     const content = form.get("content")?.toString().trim() ?? "";
     if (content.length > MAX_CONTENT_LENGTH) {
         return { error: jsonError(400, `帖子内容不能超过 ${MAX_CONTENT_LENGTH} 字`) };
@@ -407,7 +408,8 @@ export const routes = {
             const me = await getAuthUser(req);
             if (!me) return jsonError(401, "请先登录");
 
-            const form = await req.formData();
+            const form = await req.formData().catch(() => null);
+            if (!form) return jsonError(400, FORM_REQUIRED);
             const username = form.get("username")?.toString().trim() ?? "";
             const avatarFile = form.get("avatar");
             const removeAvatar = form.get("remove_avatar") === "1";

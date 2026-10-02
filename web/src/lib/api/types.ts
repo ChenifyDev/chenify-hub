@@ -100,6 +100,8 @@ export interface Draft {
     tags: string[];
 }
 
+export type Page = { offset: number; limit: number };
+
 export type Paginated<T> = {
     items: T[];
     total: number;
@@ -107,6 +109,10 @@ export type Paginated<T> = {
     limit: number;
     hasMore: boolean;
 };
+
+export type HiddenPaginated<T> = Paginated<T> & { hidden: boolean };
+
+export type RankPaginated<T> = Paginated<T> & { my_rank: number | null };
 
 export type NotificationType = "post_comment" | "post_reply" | "post_tip" | "user_tip";
 

@@ -1,51 +1,16 @@
-import { SignJWT, jwtVerify, type JWTPayload } from "jose";
 import { createHash, randomBytes } from "node:crypto";
 
-const SECRET = new TextEncoder().encode(process.env.JWT_SECRET ?? "chenify-dev-secret");
-const ACCESS_TOKEN_EXPIRY = "1h";
+import { signToken } from "../jwt";
+
+const ACCESS_TOKEN_TTL = "1h";
 const REFRESH_TOKEN_EXPIRY_DAYS = 30;
 
-export interface AccessTokenPayload {
-    sub: number;
-    client_id: string;
-    scope: string;
-    token_type: "access_token";
+export function signAccessToken(userId: number, clientId: string, scope: string): Promise<string> {
+    return signToken({ sub: userId, client_id: clientId, scope }, ACCESS_TOKEN_TTL);
 }
 
-export async function signAccessToken(userId: number, clientId: string, scope: string): Promise<string> {
-    const payload = {
-        sub: userId,
-        client_id: clientId,
-        scope,
-        token_type: "access_token",
-    } as unknown as JWTPayload;
-    return new SignJWT(payload)
-        .setProtectedHeader({ alg: "HS256" })
-        .setIssuedAt()
-        .setExpirationTime(ACCESS_TOKEN_EXPIRY)
-        .sign(SECRET);
-}
-
-export async function verifyAccessToken(token: string): Promise<AccessTokenPayload | null> {
-    try {
-        const { payload } = await jwtVerify(token, SECRET);
-        if (payload.token_type !== "access_token") return null;
-        return payload as unknown as AccessTokenPayload;
-    } catch {
-        return null;
-    }
-}
-
-export async function signIdToken(userId: number, clientId: string, issuer: string): Promise<string> {
-    return new SignJWT({
-        iss: issuer,
-        sub: String(userId),
-        aud: clientId,
-    })
-        .setProtectedHeader({ alg: "HS256" })
-        .setIssuedAt()
-        .setExpirationTime(ACCESS_TOKEN_EXPIRY)
-        .sign(SECRET);
+export function signIdToken(userId: number, clientId: string, issuer: string): Promise<string> {
+    return signToken({ iss: issuer, sub: String(userId), aud: clientId }, ACCESS_TOKEN_TTL);
 }
 
 export function generateRefreshToken(): string {

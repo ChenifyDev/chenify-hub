@@ -1,10 +1,9 @@
 import { getStorage } from "../storage";
-import { extractBearer, extractAuthToken } from "../routes/util";
+import { extractToken } from "../routes/util";
 import { verifyToken } from "../jwt";
 import { findClient, createClient, listClients, deleteClient } from "./clients";
 import {
     signAccessToken,
-    verifyAccessToken,
     signIdToken,
     generateRefreshToken,
     hashRefreshToken,
@@ -17,12 +16,8 @@ import type { RouteMap } from "../utils/shared";
 const jsonError = (status: number, message: string) => Response.json({ error: message }, { status });
 
 async function getAuthUserId(req: Request): Promise<number | null> {
-    const token = extractAuthToken(req);
-    if (!token) return null;
-    const oauthPayload = await verifyAccessToken(token);
-    if (oauthPayload?.sub) return oauthPayload.sub;
-    const payload = await verifyToken(token);
-    return (payload?.sub as number) ?? null;
+    const payload = await verifyToken(extractToken(req) ?? "");
+    return payload?.sub ? Number(payload.sub) : null;
 }
 
 function parseFormUrlEncoded(body: string): Record<string, string> {
@@ -101,7 +96,9 @@ async function handleAuthorize(req: Request): Promise<Response> {
     }
 
     const userId = await getAuthUserId(req);
+    const wantsJson = req.headers.get("accept")?.includes("application/json");
     if (!userId) {
+        if (wantsJson) return jsonError(401, "login_required");
         const loginBase = process.env.OAUTH_LOGIN_URL ?? "/login";
         const returnTo = encodeURIComponent(req.url);
         const separator = loginBase.includes("?") ? "&" : "?";
@@ -128,7 +125,8 @@ async function handleAuthorize(req: Request): Promise<Response> {
     redirectUrl.searchParams.set("code", code);
     if (state) redirectUrl.searchParams.set("state", state);
 
-    return Response.redirect(redirectUrl.toString(), 302);
+    const target = redirectUrl.toString();
+    return wantsJson ? Response.json({ redirect: target }) : Response.redirect(target, 302);
 }
 
 async function handleToken(req: Request): Promise<Response> {
@@ -305,16 +303,15 @@ async function handleRevoke(req: Request): Promise<Response> {
 }
 
 async function handleUserInfo(req: Request): Promise<Response> {
-    const userId = await getAuthUserId(req);
+    const payload = await verifyToken(extractToken(req) ?? "");
+    const userId = payload?.sub ? Number(payload.sub) : 0;
     if (!userId) return jsonError(401, "invalid_token");
 
     const storage = getStorage();
     const user = await storage.users.findUserById(userId);
     if (!user) return jsonError(401, "invalid_token");
 
-    const token = extractBearer(req)!;
-    const oauthPayload = await verifyAccessToken(token);
-    const scopes = oauthPayload?.scope?.split(" ") ?? ["openid", "profile", "email"];
+    const scopes = typeof payload?.scope === "string" ? payload.scope.split(" ") : ["openid", "profile", "email"];
 
     const info: Record<string, unknown> = { sub: String(user.id) };
     if (scopes.includes("profile")) {
@@ -332,6 +329,8 @@ async function handleUserInfo(req: Request): Promise<Response> {
 }
 
 async function handleCreateClient(req: Request): Promise<Response> {
+    if (!(await getAuthUserId(req))) return jsonError(401, "authorization_required");
+
     const body = (await req.json().catch(() => null)) as {
         name?: string;
         redirect_uris?: string[];
@@ -351,12 +350,14 @@ async function handleCreateClient(req: Request): Promise<Response> {
     return Response.json(client, { status: 201 });
 }
 
-async function handleListClients(_req: Request): Promise<Response> {
+async function handleListClients(req: Request): Promise<Response> {
+    if (!(await getAuthUserId(req))) return jsonError(401, "authorization_required");
     const clients = await listClients();
     return Response.json(clients);
 }
 
 async function handleDeleteClient(req: Request): Promise<Response> {
+    if (!(await getAuthUserId(req))) return jsonError(401, "authorization_required");
     const clientId = (req as any).params?.id;
     if (!clientId) return jsonError(400, "missing client id");
     await deleteClient(clientId);

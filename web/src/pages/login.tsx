@@ -3,22 +3,30 @@ import { ImagePlus, Loader2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
-import { Checkbox } from "@/components/ui/checkbox.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
-import { login, register, setToken, type UserPublic } from "@/lib/api";
+import { getApiBase } from "@/lib/api/http";
+import { getToken, login, register, setToken, type UserPublic } from "@/lib/api";
 import { useUserStore } from "@/stores/useUser.ts";
 import { useCoinsStore } from "@/stores/useCoins.ts";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload.ts";
 import { type FormStatus, StatusMessage } from "@/components/StatusMessage.tsx";
 
+async function handoffToOAuth(authorizeUrl: string): Promise<void> {
+    const res = await fetch(authorizeUrl, {
+        headers: { Accept: "application/json", Authorization: `Bearer ${getToken() ?? ""}` },
+    });
+    const { redirect } = ((await res.json().catch(() => null)) as { redirect?: string } | null) ?? {};
+    window.location.href = redirect ?? authorizeUrl;
+}
+
 function getSafeReturnTo(raw: string | null): string | null {
     if (!raw) return null;
     try {
         const url = new URL(raw, window.location.origin);
-        const apiBase = (import.meta.env.VITE_API_PATH as string | undefined) ?? "";
+        const apiBase = getApiBase();
         if (apiBase && url.origin === new URL(apiBase).origin && url.pathname === "/oauth/authorize") {
             return url.toString();
         }
@@ -40,7 +48,6 @@ function Field({ id, label, children }: { id: string; label: string; children: R
 function LoginForm({ returnTo, onSuccess }: { returnTo: string | null; onSuccess: (user: UserPublic) => void }) {
     const [loginName, setLoginName] = useState("");
     const [password, setPassword] = useState("");
-    const [remember, setRemember] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [status, setStatus] = useState<FormStatus>(null);
     const navigate = useNavigate();
@@ -58,13 +65,13 @@ function LoginForm({ returnTo, onSuccess }: { returnTo: string | null; onSuccess
         setSubmitting(true);
         try {
             const { token, user } = await login(loginName.trim(), password);
-            setToken(token, remember);
+            setToken(token);
             setStatus({ type: "success", text: `欢迎回来，${user.username}` });
             void useCoinsStore.getState().fetchBalance();
             onSuccess(user);
             if (!returnTo) navigate("/");
             else if (returnTo.startsWith("/")) navigate(returnTo);
-            else window.location.href = returnTo;
+            else await handoffToOAuth(returnTo);
         } catch (err) {
             setStatus({ type: "error", text: err instanceof Error ? err.message : "登录失败" });
         } finally {
@@ -96,15 +103,6 @@ function LoginForm({ returnTo, onSuccess }: { returnTo: string | null; onSuccess
                     disabled={submitting}
                 />
             </Field>
-
-            <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-                <Checkbox
-                    checked={remember}
-                    onCheckedChange={(checked) => setRemember(checked)}
-                    disabled={submitting}
-                />
-                记住我（7 天内免登录）
-            </label>
 
             <StatusMessage status={status} />
 

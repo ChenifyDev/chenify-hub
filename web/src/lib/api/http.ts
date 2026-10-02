@@ -15,18 +15,6 @@ export class ApiError extends Error {
     }
 }
 
-function dropExpiredSession(status: number): void {
-    if (status === 401 && getToken()) {
-        clearToken();
-        useUserStore.getState().setUser(null);
-    }
-}
-
-export function authHeaders(): Record<string, string> {
-    const token = getToken();
-    return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
 export function qs(params: Record<string, string | number | boolean | undefined | null>): string {
     const query = new URLSearchParams();
     for (const [key, value] of Object.entries(params)) {
@@ -37,41 +25,23 @@ export function qs(params: Record<string, string | number | boolean | undefined 
 }
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
-    const isJson = typeof init?.body === "string";
-    const res = await fetch(`/api${path}`, {
+    const token = getToken();
+    const res = await fetch(`${getApiBase()}/api${path}`, {
         ...init,
         headers: {
-            ...(isJson ? { "Content-Type": "application/json" } : {}),
+            ...(typeof init?.body === "string" ? { "Content-Type": "application/json" } : {}),
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
             ...init?.headers,
         },
     });
-    dropExpiredSession(res.status);
 
     const data = (await res.json().catch(() => null)) as { message?: string } | null;
 
-    if (!res.ok) {
-        throw new ApiError(data?.message ?? `请求失败（${res.status}）`, res.status);
+    if (res.status === 401 && token) {
+        clearToken();
+        useUserStore.getState().setUser(null);
     }
-    return data as T;
-}
+    if (!res.ok) throw new ApiError(data?.message ?? `请求失败（${res.status}）`, res.status);
 
-export async function authRequest<T>(path: string, init?: RequestInit): Promise<T> {
-    const isJson = typeof init?.body === "string";
-    const base = getApiBase();
-    const res = await fetch(`${base}/api${path}`, {
-        ...init,
-        credentials: "include",
-        headers: {
-            ...(isJson ? { "Content-Type": "application/json" } : {}),
-            ...init?.headers,
-        },
-    });
-    dropExpiredSession(res.status);
-
-    const data = (await res.json().catch(() => null)) as { message?: string } | null;
-
-    if (!res.ok) {
-        throw new ApiError(data?.message ?? `请求失败（${res.status}）`, res.status);
-    }
     return data as T;
 }

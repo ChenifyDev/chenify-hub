@@ -67,8 +67,8 @@ const read = createRateLimit({ windowMs: 60 * 1000, max: 120, message: "请求�
 const oauth = createRateLimit({ windowMs: 60 * 1000, max: 60, message: "请求过于频繁，请稍后再试" });
 
 function pick(path: string, method: string): MiddlewareHandler {
-    if (path === "/api/passport/register") return strict;
-    if (path === "/api/passport/login") return login;
+    if (path === "/api/auth/register") return strict;
+    if (path === "/api/auth/login") return login;
 
     if (path === "/api/posts" && method === "POST") return write;
     if (/^\/api\/posts\/\d+\/draft$/.test(path) && method === "POST") return write;
