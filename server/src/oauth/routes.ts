@@ -1,10 +1,9 @@
 import { getStorage } from "../storage";
-import { extractBearer, extractAuthToken } from "../routes/util";
+import { extractToken } from "../routes/util";
 import { verifyToken } from "../jwt";
 import { findClient, createClient, listClients, deleteClient } from "./clients";
 import {
     signAccessToken,
-    verifyAccessToken,
     signIdToken,
     generateRefreshToken,
     hashRefreshToken,
@@ -17,14 +16,8 @@ import type { RouteMap } from "../utils/shared";
 const jsonError = (status: number, message: string) => Response.json({ error: message }, { status });
 
 async function getAuthUserId(req: Request): Promise<number | null> {
-    const token = extractAuthToken(req);
-    if (!token) return null;
-    // Accept both OAuth access tokens and regular login tokens
-    const oauthPayload = await verifyAccessToken(token);
-    if (oauthPayload?.sub) return oauthPayload.sub;
-    // Fallback: try regular login token verification (also covers session cookie)
-    const payload = await verifyToken(token);
-    return (payload?.sub as number) ?? null;
+    const payload = await verifyToken(extractToken(req) ?? "");
+    return payload?.sub ? Number(payload.sub) : null;
 }
 
 function parseFormUrlEncoded(body: string): Record<string, string> {
@@ -36,7 +29,6 @@ function parseFormUrlEncoded(body: string): Record<string, string> {
     return params;
 }
 
-// Issuer must stay identical between discovery and issued tokens
 function getIssuer(req: Request): string {
     const configured = process.env.OAUTH_ISSUER;
     if (configured) return configured.replace(/\/+$/, "");
@@ -44,7 +36,6 @@ function getIssuer(req: Request): string {
     return `${url.protocol}//${url.host}`;
 }
 
-// x/oauth2 (used by Gitea/goth) sends client credentials via HTTP Basic by default
 function extractBasicAuth(req: Request): { client_id: string; client_secret: string } | null {
     const header = req.headers.get("authorization");
     if (!header?.startsWith("Basic ")) return null;
@@ -61,7 +52,6 @@ function extractBasicAuth(req: Request): { client_id: string; client_secret: str
     }
 }
 
-// GET /.well-known/openid-configuration
 async function handleDiscovery(req: Request): Promise<Response> {
     const base = getIssuer(req);
     return Response.json({
@@ -80,7 +70,6 @@ async function handleDiscovery(req: Request): Promise<Response> {
     });
 }
 
-// GET /oauth/authorize
 async function handleAuthorize(req: Request): Promise<Response> {
     const url = new URL(req.url);
     const responseType = url.searchParams.get("response_type");
@@ -94,7 +83,6 @@ async function handleAuthorize(req: Request): Promise<Response> {
     if (responseType !== "code") return jsonError(400, "unsupported_response_type");
     if (!clientId) return jsonError(400, "invalid_request: missing client_id");
     if (!codeChallenge) {
-        // Confidential clients (e.g. Gitea/goth) authenticate by secret at the token endpoint instead of PKCE
         console.warn("authorize without code_challenge: client must use confidential authentication");
     } else if (codeChallengeMethod !== "S256") {
         return jsonError(400, "invalid_request: code_challenge_method must be S256");
@@ -108,7 +96,9 @@ async function handleAuthorize(req: Request): Promise<Response> {
     }
 
     const userId = await getAuthUserId(req);
+    const wantsJson = req.headers.get("accept")?.includes("application/json");
     if (!userId) {
+        if (wantsJson) return jsonError(401, "login_required");
         const loginBase = process.env.OAUTH_LOGIN_URL ?? "/login";
         const returnTo = encodeURIComponent(req.url);
         const separator = loginBase.includes("?") ? "&" : "?";
@@ -135,10 +125,10 @@ async function handleAuthorize(req: Request): Promise<Response> {
     redirectUrl.searchParams.set("code", code);
     if (state) redirectUrl.searchParams.set("state", state);
 
-    return Response.redirect(redirectUrl.toString(), 302);
+    const target = redirectUrl.toString();
+    return wantsJson ? Response.json({ redirect: target }) : Response.redirect(target, 302);
 }
 
-// POST /oauth/token
 async function handleToken(req: Request): Promise<Response> {
     const contentType = req.headers.get("content-type") ?? "";
     let params: Record<string, string>;
@@ -194,20 +184,16 @@ async function handleAuthorizationCodeGrant(req: Request, params: Record<string,
     }
 
     if (authCode.code_challenge) {
-        // Public client flow: PKCE is mandatory
         if (!code_verifier) return jsonError(400, "invalid_request: missing code_verifier");
         if (!verifyPKCE(code_verifier, authCode.code_challenge)) {
             return jsonError(400, "invalid_grant: PKCE verification failed");
         }
     } else if (!client_secret || client.secret !== client_secret) {
-        // Confidential client flow without PKCE requires the secret
         return jsonError(401, "invalid_client");
     }
 
-    // Mark code as used
     await storage.store.updateById<any>("oauth_auth_codes", authCode.id, { used: true });
 
-    // Issue tokens
     const accessToken = await signAccessToken(authCode.user_id, client.id, authCode.scope);
     const refreshToken = generateRefreshToken();
     const tokenHash = hashRefreshToken(refreshToken);
@@ -263,10 +249,8 @@ async function handleRefreshTokenGrant(req: Request, params: Record<string, stri
         return jsonError(400, "invalid_grant: client_secret mismatch");
     }
 
-    // Revoke old refresh token (rotation)
     await storage.store.updateById<any>("oauth_refresh_tokens", stored.id, { revoked: true });
 
-    // Issue new tokens
     const newScope = scope || stored.scope;
     const accessToken = await signAccessToken(stored.user_id, client.id, newScope);
     const newRefreshToken = generateRefreshToken();
@@ -297,7 +281,6 @@ async function handleRefreshTokenGrant(req: Request, params: Record<string, stri
     });
 }
 
-// POST /oauth/revoke
 async function handleRevoke(req: Request): Promise<Response> {
     const body = await req.text();
     const params = parseFormUrlEncoded(body);
@@ -319,18 +302,16 @@ async function handleRevoke(req: Request): Promise<Response> {
     return new Response(null, { status: 200 });
 }
 
-// GET /oauth/userinfo
 async function handleUserInfo(req: Request): Promise<Response> {
-    const userId = await getAuthUserId(req);
+    const payload = await verifyToken(extractToken(req) ?? "");
+    const userId = payload?.sub ? Number(payload.sub) : 0;
     if (!userId) return jsonError(401, "invalid_token");
 
     const storage = getStorage();
     const user = await storage.users.findUserById(userId);
     if (!user) return jsonError(401, "invalid_token");
 
-    const token = extractBearer(req)!;
-    const oauthPayload = await verifyAccessToken(token);
-    const scopes = oauthPayload?.scope?.split(" ") ?? ["openid", "profile", "email"];
+    const scopes = typeof payload?.scope === "string" ? payload.scope.split(" ") : ["openid", "profile", "email"];
 
     const info: Record<string, unknown> = { sub: String(user.id) };
     if (scopes.includes("profile")) {
@@ -347,8 +328,9 @@ async function handleUserInfo(req: Request): Promise<Response> {
     return Response.json(info);
 }
 
-// POST /oauth/clients
 async function handleCreateClient(req: Request): Promise<Response> {
+    if (!(await getAuthUserId(req))) return jsonError(401, "authorization_required");
+
     const body = (await req.json().catch(() => null)) as {
         name?: string;
         redirect_uris?: string[];
@@ -368,14 +350,14 @@ async function handleCreateClient(req: Request): Promise<Response> {
     return Response.json(client, { status: 201 });
 }
 
-// GET /oauth/clients
-async function handleListClients(_req: Request): Promise<Response> {
+async function handleListClients(req: Request): Promise<Response> {
+    if (!(await getAuthUserId(req))) return jsonError(401, "authorization_required");
     const clients = await listClients();
     return Response.json(clients);
 }
 
-// DELETE /oauth/clients/:id
 async function handleDeleteClient(req: Request): Promise<Response> {
+    if (!(await getAuthUserId(req))) return jsonError(401, "authorization_required");
     const clientId = (req as any).params?.id;
     if (!clientId) return jsonError(400, "missing client id");
     await deleteClient(clientId);

@@ -1,5 +1,5 @@
 import { getStorage } from "../storage";
-import { getAuthUser, jsonError, parsePagination } from "./util";
+import { FORM_REQUIRED, getAuthUser, jsonError, parsePagination } from "./util";
 import { saveAvatar, type RouteMap } from "../utils";
 import { getCommentArea, setCommentArea } from "../utils/frontmatter";
 
@@ -77,7 +77,8 @@ function numericIdError(raw: string): number | Response {
 async function parseDraftForm(
     req: Request,
 ): Promise<{ content: string; tags: string[]; imageFiles: File[] } | { error: Response }> {
-    const form = await req.formData();
+    const form = await req.formData().catch(() => null);
+    if (!form) return { error: jsonError(400, FORM_REQUIRED) };
     const content = form.get("content")?.toString().trim() ?? "";
     if (content.length > MAX_CONTENT_LENGTH) {
         return { error: jsonError(400, `帖子内容不能超过 ${MAX_CONTENT_LENGTH} 字`) };
@@ -97,72 +98,28 @@ async function parseDraftForm(
 }
 
 export const routes = {
-    "/api/posts": {
-        GET: async (req) => {
-            const storage = getStorage();
-            const me = await getAuthUser(req);
-            const url = new URL(req.url);
-            const { offset, limit } = parsePagination(url);
-            const tag = url.searchParams.get("tag")?.trim().toLowerCase() || null;
-            const sort = url.searchParams.get("sort") === "hot" ? "hot" : "latest";
-            const [posts, total] = await Promise.all([
-                storage.posts.listPosts({ offset, limit, tag, sort, viewerId: me?.id ?? null }),
-                storage.posts.countPosts({ tag }),
-            ]);
-            return Response.json({ items: posts, total, offset, limit, hasMore: offset + posts.length < total });
-        },
-        POST: async (req) => {
-            const storage = getStorage();
-            const me = await getAuthUser(req);
-            if (!me) return jsonError(401, "请先登录");
-
-            const form = await req.formData();
-            const content = form.get("content")?.toString().trim() ?? "";
-            if (!content) return jsonError(400, "帖子内容不能为空");
-            if (content.length > MAX_CONTENT_LENGTH) return jsonError(400, `帖子内容不能超过 ${MAX_CONTENT_LENGTH} 字`);
-
-            const rawTags = form.get("tags")?.toString() ?? "";
-            const tags = splitTags(rawTags);
-            if (!validTags(tags)) return jsonError(400, `单个标签不能超过 ${MAX_TAG_LENGTH} 个字符`);
-
-            const imageFiles: File[] = [];
-            for (const entry of form.getAll("images")) {
-                if (entry instanceof File) imageFiles.push(entry);
-            }
-            if (imageFiles.length > MAX_IMAGES) return jsonError(400, `最多上传 ${MAX_IMAGES} 张图片`);
-
-            const saved = await saveImages(imageFiles);
-            if ("error" in saved) return jsonError(400, saved.error);
-
-            const post = await storage.posts.createPost(me.id, content, saved.paths, tags);
-            if (!post) return jsonError(500, "发帖失败");
-            return Response.json(post, { status: 201 });
-        },
+    "/api/posts": async (req) => {
+        const storage = getStorage();
+        const me = await getAuthUser(req);
+        const url = new URL(req.url);
+        const { offset, limit } = parsePagination(url);
+        const tag = url.searchParams.get("tag")?.trim().toLowerCase() || null;
+        const sort = url.searchParams.get("sort") === "hot" ? "hot" : "latest";
+        const [posts, total] = await Promise.all([
+            storage.posts.listPosts({ offset, limit, tag, sort, viewerId: me?.id ?? null }),
+            storage.posts.countPosts({ tag }),
+        ]);
+        return Response.json({ items: posts, total, offset, limit, hasMore: offset + posts.length < total });
     },
 
-    "/api/posts/:id": {
-        GET: async (req) => {
-            const storage = getStorage();
-            const parsed = numericIdError((req.params as any).id ?? "");
-            if (parsed instanceof Response) return parsed;
-            const me = await getAuthUser(req);
-            const post = await storage.posts.getPostById(parsed, me?.id ?? null);
-            if (!post) return jsonError(404, "帖子不存在");
-            return Response.json(post);
-        },
-        DELETE: async (req) => {
-            const storage = getStorage();
-            const me = await getAuthUser(req);
-            if (!me) return jsonError(401, "请先登录");
-            const parsed = numericIdError((req.params as any).id ?? "");
-            if (parsed instanceof Response) return parsed;
-            const ownerId = await storage.posts.getPostOwner(parsed);
-            if (ownerId === null) return jsonError(404, "帖子不存在");
-            if (ownerId !== me.id) return jsonError(403, "无权删除该帖子");
-            const paths = await storage.posts.deletePost(parsed);
-            await deleteImageFiles(paths);
-            return Response.json({ success: true });
-        },
+    "/api/posts/:id": async (req) => {
+        const storage = getStorage();
+        const parsed = numericIdError((req.params as any).id ?? "");
+        if (parsed instanceof Response) return parsed;
+        const me = await getAuthUser(req);
+        const post = await storage.posts.getPostById(parsed, me?.id ?? null);
+        if (!post) return jsonError(404, "帖子不存在");
+        return Response.json(post);
     },
 
     "/api/posts/:id/draft": {
@@ -451,7 +408,8 @@ export const routes = {
             const me = await getAuthUser(req);
             if (!me) return jsonError(401, "请先登录");
 
-            const form = await req.formData();
+            const form = await req.formData().catch(() => null);
+            if (!form) return jsonError(400, FORM_REQUIRED);
             const username = form.get("username")?.toString().trim() ?? "";
             const avatarFile = form.get("avatar");
             const removeAvatar = form.get("remove_avatar") === "1";

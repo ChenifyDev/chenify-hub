@@ -1,0 +1,94 @@
+import { useEffect, useMemo, useState } from "react";
+import { ListTree } from "lucide-react";
+
+import { Button } from "@/components/ui/button.tsx";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet.tsx";
+import type { DocHeading } from "@/lib/tiptap-extensions.ts";
+import { parseDocument } from "@/lib/tiptap-extensions.ts";
+import { parseFrontmatter } from "@/lib/frontmatter.ts";
+import { cn } from "@/lib/utils.ts";
+
+function TocList({ nodes }: { nodes: DocHeading[] }) {
+    const [activeId, setActiveId] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (nodes.length === 0) return;
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const intersecting = entries.filter((entry) => entry.isIntersecting);
+                if (intersecting.length === 0) return;
+                const topmost = intersecting.reduce((best, entry) =>
+                    (entry.target as HTMLElement).getBoundingClientRect().top <
+                    (best.target as HTMLElement).getBoundingClientRect().top
+                        ? entry
+                        : best,
+                );
+                setActiveId((topmost.target as HTMLElement).id);
+            },
+            { rootMargin: "0px 0px -85% 0px", threshold: 0 },
+        );
+        for (const node of nodes) {
+            const el = document.getElementById(node.id);
+            if (el) observer.observe(el);
+        }
+        return () => observer.disconnect();
+    }, [nodes]);
+
+    return (
+        <div className="grid gap-0.5">
+            {nodes.map((node) => (
+                <button
+                    key={node.id}
+                    type="button"
+                    data-depth={node.depth}
+                    onClick={() => {
+                        setActiveId(node.id);
+                        document.getElementById(node.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                    className={cn(
+                        "toc-item truncate rounded-md pr-2 py-1 text-left text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                        activeId === node.id && "bg-muted text-foreground",
+                    )}
+                >
+                    {node.text}
+                </button>
+            ))}
+        </div>
+    );
+}
+
+export function PostAstTree({ content }: { content: string }) {
+    const nodes = useMemo(() => parseDocument(parseFrontmatter(content).body).headings, [content]);
+    const [open, setOpen] = useState(false);
+
+    if (nodes.length === 0) return null;
+
+    return (
+        <>
+            <Button
+                variant="outline"
+                size="icon-lg"
+                className="fixed right-4 bottom-6 z-30 shadow-md"
+                aria-label="打开目录"
+                onClick={() => setOpen(true)}
+            >
+                <ListTree />
+            </Button>
+            <Sheet open={open} onOpenChange={setOpen}>
+                <SheetContent side="right">
+                    <SheetHeader>
+                        <SheetTitle className="flex items-center gap-2">
+                            <ListTree className="size-4" />
+                            目录
+                        </SheetTitle>
+                    </SheetHeader>
+                    <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
+                        <TocList nodes={nodes} />
+                    </div>
+                </SheetContent>
+            </Sheet>
+        </>
+    );
+}
+
+export default PostAstTree;

@@ -254,8 +254,6 @@ export const draftTags = sqliteTable(
     ],
 );
 
-// --- OAuth2 ---
-
 export const oauthClients = sqliteTable("oauth_clients", {
     id: text("id").primaryKey(),
     secret: text("secret"),

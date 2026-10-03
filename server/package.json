@@ -2,38 +2,5 @@
     "name": "server",
     "private": true,
     "type": "module",
-    "module": "index.ts",
-    "scripts": {
-        "start": "bun index.ts",
-        "dev": "bun index.ts --watch",
-        "seed": "bun seed.ts",
-        "db:push": "drizzle-kit push",
-        "db:generate": "drizzle-kit generate",
-        "db:migrate": "drizzle-kit migrate",
-        "db:studio": "drizzle-kit studio",
-        "works:push": "drizzle-kit push --config drizzle-works.config.ts",
-        "works:generate": "drizzle-kit generate --config drizzle-works.config.ts",
-        "works:migrate": "drizzle-kit migrate --config drizzle-works.config.ts",
-        "works:studio": "drizzle-kit studio --config drizzle-works.config.ts",
-        "db:push:neon": "drizzle-kit push --config drizzle-neon.config.ts",
-        "db:generate:neon": "drizzle-kit generate --config drizzle-neon.config.ts",
-        "build": "bun build index.ts --outdir dist --minify --target bun"
-    },
-    "dependencies": {
-        "@neondatabase/serverless": "^1.1.0",
-        "@tiptap/core": "^3.30.2",
-        "@vercel/blob": "^2.8.0",
-        "dotenv": "^17.4.2",
-        "drizzle-orm": "^0.45.2",
-        "hono": "^4.13.3",
-        "jose": "^6.2.9"
-    },
-    "devDependencies": {
-        "@types/bun": "latest",
-        "better-sqlite3": "^13.0.3",
-        "drizzle-kit": "^0.31.10"
-    },
-    "peerDependencies": {
-        "typescript": "^5"
-    }
+    "module": "index.ts"
 }

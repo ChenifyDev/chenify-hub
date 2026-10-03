@@ -5,7 +5,7 @@ import { rateLimit } from "./rate-limit";
 import { getStorage } from "./storage";
 import { registerRoutes } from "./utils";
 import { routes as homeRoutes } from "./routes/home";
-import { routes as passportRoutes } from "./routes/passport";
+import { routes as authRoutes } from "./routes/auth";
 import { routes as forumRoutes } from "./routes/forum";
 import { routes as spaceRoutes } from "./routes/space";
 import { routes as searchRoutes } from "./routes/search";
@@ -16,7 +16,9 @@ import { routes as oauthRoutes } from "./oauth";
 
 const app = new Hono();
 
-const allowedOrigins = ["https://hub.chenify.top", "http://localhost:5173"];
+const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? "https://hub.chenify.top")
+    .split(",")
+    .map((origin) => origin.trim());
 
 app.use(
     cors({
@@ -32,7 +34,6 @@ app.use(
         allowMethods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
         allowHeaders: ["Content-Type", "Authorization"],
         exposeHeaders: ["Location"],
-        credentials: true,
         maxAge: 86400,
     }),
 );
@@ -42,7 +43,7 @@ app.use(rateLimit);
 app.notFound(() => new Response("Not Found", { status: 404 }));
 
 registerRoutes(app, {
-    ...passportRoutes,
+    ...authRoutes,
     ...forumRoutes,
     ...spaceRoutes,
     ...searchRoutes,

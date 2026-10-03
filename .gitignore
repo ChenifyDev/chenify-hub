@@ -11,9 +11,10 @@ node_modules
 dist
 dist-ssr
 *.local
+uploads/
 
-# 由 scripts/gen-plugin-types.ts 生成，给插件作者的类型包
-public/chenify-plugin-types
+# 由 web/scripts/gen-plugin-types.ts 生成，给插件作者的类型包
+web/public/chenify-plugin-types
 
 # Editor directories and files
 .vscode/*
@@ -25,3 +26,5 @@ public/chenify-plugin-types
 *.njsproj
 *.sln
 *.sw?
+.vercel
+!.env.example

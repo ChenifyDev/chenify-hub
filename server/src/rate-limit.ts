@@ -13,9 +13,7 @@ interface RateLimitOptions {
 }
 
 const DEFAULT_KEY = (c: Context): string => {
-    return c.req.header("x-forwarded-for")?.split(",")[0]?.trim()
-        ?? c.req.header("x-real-ip")
-        ?? "unknown";
+    return c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ?? c.req.header("x-real-ip") ?? "unknown";
 };
 
 export function createRateLimit(options: RateLimitOptions): MiddlewareHandler {
@@ -53,7 +51,7 @@ export function createRateLimit(options: RateLimitOptions): MiddlewareHandler {
 
         if (entry.count > max) {
             c.header("Retry-After", String(retryAfter));
-            return c.json({ error: message, retryAfter }, 429);
+            return c.json({ message, retryAfter }, 429);
         }
 
         await next();
@@ -69,8 +67,8 @@ const read = createRateLimit({ windowMs: 60 * 1000, max: 120, message: "请求�
 const oauth = createRateLimit({ windowMs: 60 * 1000, max: 60, message: "请求过于频繁，请稍后再试" });
 
 function pick(path: string, method: string): MiddlewareHandler {
-    if (path === "/api/passport/register") return strict;
-    if (path === "/api/passport/login") return login;
+    if (path === "/api/auth/register") return strict;
+    if (path === "/api/auth/login") return login;
 
     if (path === "/api/posts" && method === "POST") return write;
     if (/^\/api\/posts\/\d+\/draft$/.test(path) && method === "POST") return write;

@@ -1,0 +1,317 @@
+import {
+    type CoinPeriod,
+    type CoinUser,
+    type FollowUser,
+    type PointsUser,
+    coinLeaderboard,
+    rankUsersByFollowers,
+    rankUsersByPostPoints,
+} from "@/lib/api";
+import { type CSSProperties, useCallback, useState } from "react";
+import { Link } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card.tsx";
+import FeedList from "@/components/forum/FeedList.tsx";
+import UserRow from "@/components/user/UserRow.tsx";
+import { useLazyFeed } from "@/hooks/useLazyFeed.ts";
+import type { TabData } from "@/types/tab.ts";
+import { useInfiniteList } from "@/hooks/useInfiniteList.ts";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { Page, PageHeader } from "@/components/layout/Page.tsx";
+import { Trophy } from "lucide-react";
+import { UserAvatar } from "@/components/avatar.tsx";
+
+const LIMIT = 10;
+
+function beamLayer(width: string, via: string, distance: string) {
+    return (
+        <div
+            className="pointer-events-none absolute inset-0 rounded-[inherit] border-transparent mask-[linear-gradient(transparent,transparent),linear-gradient(#000,#000)] mask-intersect [mask-clip:padding-box,border-box]"
+            style={{ "--border-beam-width": width, borderWidth: "var(--border-beam-width)" } as CSSProperties}
+        >
+            <div
+                className={`absolute aspect-square bg-linear-to-l from-transparent ${via} to-transparent`}
+                style={{ width: "150px", offsetPath: "rect(0px auto auto 0px round 150px)", offsetDistance: distance }}
+            />
+        </div>
+    );
+}
+
+const PODIUM_SLOTS = [
+    {
+        medal: "🥇",
+        order: "order-2",
+        medalWrap: "size-12 sm:size-24",
+        medalText: "text-4xl sm:text-8xl",
+        avatar: "size-10 sm:size-16",
+        name: "max-w-16 sm:max-w-36 text-xs sm:text-lg",
+        count: "text-sm sm:text-xl",
+    },
+    {
+        medal: "🥈",
+        order: "order-1",
+        medalWrap: "size-10 sm:size-20",
+        medalText: "text-3xl sm:text-6xl",
+        avatar: "size-8 sm:size-14",
+        name: "max-w-14 sm:max-w-32 text-xs sm:text-base",
+        count: "text-xs sm:text-lg",
+    },
+    {
+        medal: "🥉",
+        order: "order-3",
+        medalWrap: "size-10 sm:size-20",
+        medalText: "text-3xl sm:text-6xl",
+        avatar: "size-8 sm:size-14",
+        name: "max-w-14 sm:max-w-32 text-xs sm:text-base",
+        count: "text-xs sm:text-lg",
+    },
+] as const;
+
+type PodiumUser = { id: number; username: string; avatar?: string | null; value: number };
+
+function Podium({ top, label }: { top: PodiumUser[]; label: string }) {
+    const slots = PODIUM_SLOTS.map((slot, i) => ({ slot, user: top[i] })).filter((s) => s.user);
+    const count = slots.length;
+
+    const gridClass = (() => {
+        if (count === 1) return "grid-cols-1 justify-items-center";
+        if (count === 2) return "grid-cols-2";
+        return "grid-cols-3";
+    })();
+
+    return (
+        <div className={`mb-8 grid ${gridClass} gap-2 sm:gap-6`}>
+            {slots.map(({ slot, user }) => (
+                <div key={slot.medal} className={`flex flex-col items-center ${slot.order}`}>
+                    <div className={`mb-1 sm:mb-3 flex items-center justify-center ${slot.medalWrap}`}>
+                        <span className={slot.medalText}>{slot.medal}</span>
+                    </div>
+                    <Link to={`/users/${user.id}`} className="w-full">
+                        <Card className="relative w-full overflow-hidden py-4 sm:py-10">
+                            <CardContent className="min-w-0 w-full px-2 sm:px-8 text-center">
+                                <UserAvatar user={user} className={`mx-auto mb-1 sm:mb-3 ${slot.avatar}`} />
+                                <div className={`mb-0.5 sm:mb-2 truncate mx-auto font-semibold ${slot.name}`}>
+                                    {user.username}
+                                </div>
+                                <div className="flex flex-col sm:flex-row items-center justify-center gap-0 sm:gap-1">
+                                    <span className="text-2xs sm:text-sm text-muted-foreground">{label}</span>
+                                    <span className={`font-bold ${slot.count}`}>{user.value}</span>
+                                </div>
+                            </CardContent>
+                            {beamLayer("1px", "via-red-500", "79.2667%")}
+                            {beamLayer("2px", "via-blue-500", "29.2667%")}
+                        </Card>
+                    </Link>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function rankColor(rank: number): string {
+    if (rank === 1) return "text-medal-gold";
+    if (rank === 2) return "text-medal-silver";
+    if (rank === 3) return "text-medal-bronze";
+    return "text-muted-foreground";
+}
+
+function RankBadge({ rank, label, value }: { rank: number; label: string; value: number }) {
+    return (
+        <span
+            className={`flex h-6 min-w-9 items-center justify-center rounded-md bg-muted px-1.5 text-xs font-semibold ${rankColor(rank)}`}
+        >
+            第{rank}名 · {label}：{value}
+        </span>
+    );
+}
+
+type BoardUser = {
+    id: number;
+    username: string;
+    avatar?: string | null;
+    is_following: boolean;
+    rank?: number;
+};
+
+function RankTab<T extends BoardUser>({
+    tab,
+    title,
+    label,
+    value,
+    hiddenText,
+}: {
+    tab: TabData<T>;
+    title: string;
+    label: string;
+    value: (user: T) => number;
+    hiddenText?: string;
+}) {
+    const feed = useLazyFeed(tab);
+    const top = feed.items.slice(0, 3);
+    const topIds = new Set(top.map((u) => u.id));
+    const rows = { ...feed, items: feed.items.filter((u) => !topIds.has(u.id)) };
+    return (
+        <>
+            <Podium
+                top={top.map((u) => ({ id: u.id, username: u.username, avatar: u.avatar, value: value(u) }))}
+                label={label}
+            />
+            <FeedList feed={rows} empty={`还没有${title}`} hiddenText={hiddenText} className="grid gap-1">
+                {(user) => (
+                    <UserRow
+                        key={user.id}
+                        user={user}
+                        onFollowChange={(updated) =>
+                            feed.updateItems((items) => items.map((u) => (u.id === updated.id ? updated : u)))
+                        }
+                    >
+                        {user.rank != null ? <RankBadge rank={user.rank} label={label} value={value(user)} /> : null}
+                    </UserRow>
+                )}
+            </FeedList>
+        </>
+    );
+}
+
+const COIN_PERIODS: { value: CoinPeriod; label: string }[] = [
+    { value: "week", label: "周榜" },
+    { value: "month", label: "月榜" },
+    { value: "total", label: "总榜" },
+];
+
+function CoinTabs() {
+    const [myCoinsRank, setMyCoinsRank] = useState<Record<CoinPeriod, number | null>>({
+        week: null,
+        month: null,
+        total: null,
+    });
+    const tabs: Record<CoinPeriod, TabData<CoinUser>> = {
+        week: useInfiniteList<CoinUser>({
+            fetcher: useCallback(async (offset) => {
+                const res = await coinLeaderboard({ period: "week", limit: LIMIT, offset });
+                setMyCoinsRank((prev) => ({ ...prev, week: res.my_rank }));
+                return { items: res.items, hasMore: res.hasMore, hidden: false };
+            }, []),
+            autoStart: false,
+        }),
+        month: useInfiniteList<CoinUser>({
+            fetcher: useCallback(async (offset) => {
+                const res = await coinLeaderboard({ period: "month", limit: LIMIT, offset });
+                setMyCoinsRank((prev) => ({ ...prev, month: res.my_rank }));
+                return { items: res.items, hasMore: res.hasMore, hidden: false };
+            }, []),
+            autoStart: false,
+        }),
+        total: useInfiniteList<CoinUser>({
+            fetcher: useCallback(async (offset) => {
+                const res = await coinLeaderboard({ period: "total", limit: LIMIT, offset });
+                setMyCoinsRank((prev) => ({ ...prev, total: res.my_rank }));
+                return { items: res.items, hasMore: res.hasMore, hidden: false };
+            }, []),
+            autoStart: false,
+        }),
+    };
+
+    return (
+        <Tabs defaultValue="week" className="w-full">
+            <TabsList className="w-full">
+                {COIN_PERIODS.map((p) => (
+                    <TabsTrigger key={p.value} value={p.value} className="flex-1">
+                        {p.label}
+                    </TabsTrigger>
+                ))}
+            </TabsList>
+            {COIN_PERIODS.map((p) => (
+                <TabsContent key={p.value} value={p.value} className="pt-4">
+                    <RankTab tab={tabs[p.value]} title="用户" label="硬币" value={(u) => u.coins} />
+                    {myCoinsRank[p.value] != null && (
+                        <Card className="mt-4">
+                            <CardContent className="flex items-center justify-center gap-2 py-4">
+                                <span className="text-sm text-muted-foreground">我的硬币排名</span>
+                                <span className={`text-lg font-bold ${rankColor(myCoinsRank[p.value]!)}`}>
+                                    第 {myCoinsRank[p.value]} 名
+                                </span>
+                            </CardContent>
+                        </Card>
+                    )}
+                </TabsContent>
+            ))}
+        </Tabs>
+    );
+}
+
+function RankTabs() {
+    const [myRank, setMyRank] = useState<number | null>(null);
+    const [myPointsRank, setMyPointsRank] = useState<number | null>(null);
+    const followers = useInfiniteList<FollowUser>({
+        fetcher: useCallback(async (offset) => {
+            const res = await rankUsersByFollowers({ limit: LIMIT, offset });
+            setMyRank(res.my_rank);
+            return { items: res.items, hasMore: res.hasMore, hidden: false };
+        }, []),
+        autoStart: false,
+    });
+    const points = useInfiniteList<PointsUser>({
+        fetcher: useCallback(async (offset) => {
+            const res = await rankUsersByPostPoints({ limit: LIMIT, offset });
+            setMyPointsRank(res.my_rank);
+            return { items: res.items, hasMore: res.hasMore, hidden: false };
+        }, []),
+        autoStart: false,
+    });
+
+    return (
+        <Tabs defaultValue="followers" className="w-full">
+            <TabsList className="w-full">
+                <TabsTrigger value="followers" className="flex-1">
+                    粉丝排名
+                </TabsTrigger>
+                <TabsTrigger value="points" className="flex-1">
+                    帖子积分排名
+                </TabsTrigger>
+                <TabsTrigger value="coins" className="flex-1">
+                    硬币打赏榜
+                </TabsTrigger>
+            </TabsList>
+            <TabsContent value="followers" className="pt-4">
+                <RankTab
+                    tab={followers}
+                    title="用户"
+                    label="粉丝"
+                    value={(u) => u.followers}
+                    hiddenText="该用户将关注列表设置为私密，无法查看"
+                />
+                {myRank != null && (
+                    <Card className="mt-4">
+                        <CardContent className="flex items-center justify-center gap-2 py-4">
+                            <span className="text-sm text-muted-foreground">我的粉丝排名</span>
+                            <span className={`text-lg font-bold ${rankColor(myRank)}`}>第 {myRank} 名</span>
+                        </CardContent>
+                    </Card>
+                )}
+            </TabsContent>
+            <TabsContent value="points" className="pt-4">
+                <RankTab tab={points} title="用户" label="积分" value={(u) => u.points} />
+                {myPointsRank != null && (
+                    <Card className="mt-4">
+                        <CardContent className="flex items-center justify-center gap-2 py-4">
+                            <span className="text-sm text-muted-foreground">我的积分排名</span>
+                            <span className={`text-lg font-bold ${rankColor(myPointsRank)}`}>第 {myPointsRank} 名</span>
+                        </CardContent>
+                    </Card>
+                )}
+            </TabsContent>
+            <TabsContent value="coins" className="pt-4">
+                <CoinTabs />
+            </TabsContent>
+        </Tabs>
+    );
+}
+
+export default function RankPage() {
+    return (
+        <Page>
+            <PageHeader icon={Trophy} title="排行榜" description="看看谁在社区里最有存在感" />
+            <RankTabs />
+        </Page>
+    );
+}
