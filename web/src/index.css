@@ -417,7 +417,7 @@ body.app-bg-active [data-slot="tabs-list"] {
     }
 
     .tiptap {
-        @apply min-h-[50vh] px-4 py-3 outline-none;
+        @apply px-4 py-3 outline-none;
     }
 
     .toc-item {
