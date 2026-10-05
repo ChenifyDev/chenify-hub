@@ -1,8 +1,10 @@
 import { mkdirSync } from "node:fs";
+import { join } from "node:path";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { rateLimit } from "./rate-limit";
 import { getStorage } from "./storage";
+import { UPLOADS_DIR } from "./storage/driver/sqlite/blobs";
 import { registerRoutes } from "./utils";
 import { routes as homeRoutes } from "./routes/home";
 import { routes as authRoutes } from "./routes/auth";
@@ -57,13 +59,13 @@ registerRoutes(app, {
 const storage = getStorage();
 
 if (storage.name === "sqlite") {
-    mkdirSync("./uploads", { recursive: true });
+    mkdirSync(UPLOADS_DIR, { recursive: true });
     app.get("/uploads/*", (c) => {
         const path = decodeURIComponent(new URL(c.req.url).pathname.replace(/^\/uploads\//, ""));
         if (!path || path.includes("..") || path.includes("/") || path.includes("\\")) {
             return new Response("Not Found", { status: 404 });
         }
-        return new Response(Bun.file(`./uploads/${path}`));
+        return new Response(Bun.file(join(UPLOADS_DIR, path)));
     });
 }
 

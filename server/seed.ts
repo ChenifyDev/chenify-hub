@@ -24,6 +24,10 @@ const SAMPLE_USERNAMES = ["alice", "bob", "carol", "dave", "erin"];
 
 const reset = process.argv.includes("--reset");
 
+function toIso(value: string): string {
+    return new Date(value.includes(" ") ? `${value.replace(" ", "T")}Z` : value).toISOString();
+}
+
 interface SeedPost {
     content: string;
     tags: string[];
@@ -484,7 +488,7 @@ async function main() {
                 const inserted = await store.insert<StoredPost>(C.posts, {
                     user_id: userId,
                     content: contentRef,
-                    created_at: post.created_at,
+                    created_at: toIso(post.created_at),
                     pinned: false,
                 });
                 postId = inserted.id;
@@ -505,8 +509,8 @@ async function main() {
                 content: contentRef,
                 status: draft.status,
                 post_id: postId,
-                created_at: draft.created_at,
-                updated_at: draft.updated_at,
+                created_at: toIso(draft.created_at),
+                updated_at: toIso(draft.updated_at),
             });
             await attachDraftTags(inserted.id, draft.tags);
         }
@@ -576,7 +580,7 @@ async function main() {
                 post_id: postId,
                 user_id: authorId,
                 content: contentRef,
-                created_at: comment.created_at,
+                created_at: toIso(comment.created_at),
                 parent_id: parentId,
             });
             commentId = inserted.id;
