@@ -17,11 +17,8 @@
 @source inline("border{,-}{2,4,8} divide-{x,y} ring-{0,1,2,3,4,8} outline-{0,1,2,4,8} blur-{none,sm,md,lg,xl,2xl,3xl} backdrop-blur-{none,sm,md,lg,xl,2xl} drop-shadow-{none,sm,md,lg,xl,2xl} mix-blend-{normal,multiply,screen,overlay,darken,lighten}");
 
 @theme {
-    --spacing: 0.27rem;
-    --text-xs: 0.8125rem;
-    --text-xs--line-height: 1.45;
-    --text-sm: 0.9375rem;
-    --text-sm--line-height: 1.55;
+    --text-xs: 0.785rem;
+    --text-xs--line-height: 1.4;
 }
 
 @theme inline {
@@ -240,7 +237,7 @@ body.app-bg-active [data-slot="tabs-list"] {
 
 @layer components {
     .markdown-body {
-        @apply break-words text-sm leading-relaxed;
+        @apply wrap-break-word text-sm leading-relaxed;
     }
     .markdown-body > :first-child {
         margin-top: 0;
