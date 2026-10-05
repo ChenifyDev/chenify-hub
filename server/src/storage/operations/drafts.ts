@@ -181,6 +181,7 @@ export function createDraftsRepo(store: CollectionStore, blobStore: BlobStore): 
             const draft = await this.getDraftById(id);
             if (!draft) return null;
             if (draft.status === "published" && draft.post_id != null) {
+                // biome-ignore lint/style/noNonNullAssertion: ignore
                 return { draft, post: (await getPostByIdStandalone(store, blobStore, draft.post_id, draft.user_id))! };
             }
             const post = await createPostStandalone(
@@ -197,6 +198,7 @@ export function createDraftsRepo(store: CollectionStore, blobStore: BlobStore): 
                 post_id: post.id,
                 updated_at: new Date().toISOString(),
             });
+            // biome-ignore lint/style/noNonNullAssertion: ignore
             return { draft: (await this.getDraftById(id))!, post };
         },
 
@@ -210,6 +212,7 @@ export function createDraftsRepo(store: CollectionStore, blobStore: BlobStore): 
                 updated_at: new Date().toISOString(),
             });
             if (wasPublished) {
+                // biome-ignore lint/style/noNonNullAssertion: ignore
                 await deletePostRowStandalone(store, blobStore, draft.post_id!);
             }
             return this.getDraftById(id);

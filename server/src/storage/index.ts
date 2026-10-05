@@ -46,7 +46,6 @@ export function getStorage(): Storage {
         case "neon":
             plugin = neonStoragePlugin();
             break;
-        case "sqlite":
         default:
             plugin = sqliteStoragePlugin();
             break;

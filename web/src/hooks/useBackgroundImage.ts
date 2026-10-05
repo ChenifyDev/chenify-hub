@@ -49,7 +49,7 @@ async function compressToWebp(file: File): Promise<Blob> {
     context.drawImage(image, 0, 0, width, height);
 
     const blob = await canvasToBlob(canvas);
-    if (!blob || !blob.type.startsWith("image/webp")) {
+    if (!blob?.type.startsWith("image/webp")) {
         throw new Error("浏览器不支持 webp 编码");
     }
     return blob;
@@ -57,7 +57,9 @@ async function compressToWebp(file: File): Promise<Blob> {
 
 export function useBackgroundImage({ onError }: { onError?: (message: string) => void } = {}) {
     const [url, setUrl] = useState<string | null>(() => localStorage.getItem(STORAGE_KEY));
-    const [blur, setBlurState] = useState<boolean>(() => localStorage.getItem(BLUR_STORAGE_KEY) !== "off");
+    const [blur, setBlurState] = useState<boolean>(
+        () => localStorage.getItem(BLUR_STORAGE_KEY) !== "off",
+    );
 
     useEffect(() => {
         if (url) {

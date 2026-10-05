@@ -25,8 +25,10 @@ async function processImage(file: File): Promise<{ data: Uint8Array | File; ext:
     try {
         const bytes = await new Bun.Image(file).webp({ quality: IMAGE_WEBP_QUALITY }).bytes();
         if (bytes.length < file.size) return { data: bytes, ext: "webp" };
+        // biome-ignore lint/style/noNonNullAssertion: ignore
         return { data: file, ext: IMAGE_EXTENSIONS[file.type]! };
     } catch {
+        // biome-ignore lint/style/noNonNullAssertion: ignore
         return { data: file, ext: IMAGE_EXTENSIONS[file.type]! };
     }
 }

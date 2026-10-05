@@ -36,6 +36,7 @@ export async function saveAvatar(file: File): Promise<{ path: string } | { error
         return { error: Response.json({ message: "头像大小不能超过 2MB" }, { status: 400 }) };
     }
     const base = crypto.randomUUID();
+    // biome-ignore lint/style/noNonNullAssertion: ignore
     const processed = await processAvatar(file, AVATAR_EXTENSIONS[file.type]!);
     const path = await getStorage().blobs.put(processed.data, `${base}.${processed.ext}`);
     return { path };

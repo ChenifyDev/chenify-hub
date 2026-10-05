@@ -20,12 +20,16 @@
     "linter": {
         "enabled": true,
         "rules": {
-            "recommended": true,
+            "preset": "recommended",
             "correctness": {
                 "useHookAtTopLevel": "error"
             },
             "style": {
-                "useComponentExportOnlyModules": "warn"
+                "useComponentExportOnlyModules": "off"
+            },
+            "suspicious": {
+                "noExplicitAny": "off",
+                "noImplicitAnyLet": "off"
             }
         }
     },

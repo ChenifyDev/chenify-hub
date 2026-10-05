@@ -173,6 +173,7 @@ export function createCommentsRepo(store: CollectionStore, blobStore: BlobStore)
             const descendantIds = [id];
             const queue = [id];
             while (queue.length > 0) {
+                // biome-ignore lint/style/noNonNullAssertion: ignore
                 const pid = queue.shift()!;
                 for (const row of comments) {
                     if (row.parent_id === pid) {

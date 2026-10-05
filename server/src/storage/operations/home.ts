@@ -19,7 +19,7 @@ import type { Post, PostRow } from "../types";
 
 async function boardViewerFollowingsPosts(
     store: CollectionStore,
-    blobStore: BlobStore,
+    _blobStore: BlobStore,
     viewerId: number | null,
 ): Promise<PostRow[]> {
     if (viewerId == null) return [];

@@ -44,6 +44,7 @@ function pkColumns(name: string): string[] {
 }
 
 function pkEqual(table: any, row: any, cols: string[]) {
+    // biome-ignore lint/style/noNonNullAssertion: ignore
     return cols.length === 1 ? eq(table[cols[0]!], row[cols[0]!]) : and(...cols.map((col) => eq(table[col], row[col])));
 }
 

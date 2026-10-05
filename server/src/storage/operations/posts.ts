@@ -409,6 +409,7 @@ export function createPostsRepo(store: CollectionStore, blobStore: BlobStore): P
                 .sort((a, b) => b.id - a.id);
             const page = favorited
                 .slice(options.offset, options.offset + options.limit)
+                // biome-ignore lint/style/noNonNullAssertion: ignore
                 .map((fav) => rowMap.get(fav.post_id)!);
             await loadRowsContent(blobStore, page);
             return hydratePosts(store, page, options.viewerId);

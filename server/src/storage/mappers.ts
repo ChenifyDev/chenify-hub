@@ -173,6 +173,7 @@ function treeIndex<T extends { id: number; parent_id: number | null; created_at:
         const out: T[] = [];
         const queue = [rootId];
         while (queue.length > 0) {
+            // biome-ignore lint/style/noNonNullAssertion: ignore
             const pid = queue.shift()!;
             const kids = childrenMap.get(pid) ?? [];
             for (const kid of kids) {

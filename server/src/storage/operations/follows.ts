@@ -6,7 +6,7 @@ import type { FollowsRepo } from "../plugin";
 
 async function fetchFollowUsers(
     store: CollectionStore,
-    ownerId: number,
+    _ownerId: number,
     viewerId: number | null,
     options: { offset: number; limit: number },
     filter: (follow: StoredFollow) => boolean,
