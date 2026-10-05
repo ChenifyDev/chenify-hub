@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 
 import { parseFrontmatter } from "@/lib/frontmatter.ts";
@@ -16,6 +16,12 @@ export function Markdown({ content, className }: { content: string; className?: 
         injectCSS: false,
         editorProps: { attributes: { class: "markdown-body" } },
     });
+
+    useEffect(() => {
+        if (editor && doc) {
+            editor.commands.setContent(doc);
+        }
+    }, [doc, editor]);
 
     return (
         <div className={cn("markdown-body", className)}>
