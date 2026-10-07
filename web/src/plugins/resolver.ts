@@ -2,6 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as ReactJsxRuntime from "react/jsx-runtime";
 import * as ReactJsxDevRuntime from "react/jsx-dev-runtime";
+import * as ReactRouterDom from "react-router-dom";
 import { cva } from "class-variance-authority";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -54,6 +55,7 @@ const BARE_MODULES = new Map<string, ModuleExports>([
     ["class-variance-authority", { cva }],
     ["clsx", { clsx, default: clsx }],
     ["tailwind-merge", { twMerge, default: twMerge }],
+    ["react-router-dom", namespace(ReactRouterDom)],
     ["@/lib/utils", { cn, default: cn }],
 ]);
 
@@ -156,7 +158,8 @@ function createRequire(graph: PluginGraph, importerPath: string, sdk: PluginSdk)
 
         throw new PluginResolveError(
             `插件不支持导入 "${specifier}"（来自 ${importerPath}）。可用：react、react-dom、react/jsx-runtime、` +
-                `class-variance-authority、clsx、tailwind-merge、@/lib/utils、@/components/ui/*、@/plugins/api，以及包内的相对路径。`,
+                `react-router-dom、class-variance-authority、clsx、tailwind-merge、@/lib/utils、` +
+                `@/components/ui/*、@/plugins/api，以及包内的相对路径。`,
         );
     };
 }
@@ -229,6 +232,14 @@ export function loadSlotComponent(graph: PluginGraph, slot: PluginSlot, path: st
     const component = loadModule(graph, path, sdk).default;
     if (typeof component !== "function") {
         throw new PluginResolveError(`${path} 需要 default 导出一个 React 组件（插槽 "${slot}"）`);
+    }
+    return component;
+}
+
+export function loadPageComponent(graph: PluginGraph, pagePath: string, path: string, sdk: PluginSdk): unknown {
+    const component = loadModule(graph, path, sdk).default;
+    if (typeof component !== "function") {
+        throw new PluginResolveError(`${path} 需要 default 导出一个 React 组件（页面 "/plugin/${pagePath}"）`);
     }
     return component;
 }

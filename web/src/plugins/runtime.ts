@@ -1,16 +1,29 @@
 import { useEffect, type ReactNode } from "react";
 
+import { navigate } from "./navigation.ts";
 import {
     WRAPPED_COMPONENTS,
     createGraph,
     initTranspiler,
+    loadPageComponent,
     loadSlotComponent,
     releaseGraph,
     type PluginGraph,
 } from "./resolver.ts";
 import { dropPluginStyles, setPluginScope, setPluginStyle } from "./styles.ts";
-import { usePluginStore, type PluginOverrideEntry, type PluginOverrides } from "./store.ts";
-import { manifestSlotEntries, type PluginError, type StoredPlugin } from "./types.ts";
+import {
+    usePluginStore,
+    type PluginOverrideEntry,
+    type PluginOverrides,
+    type PluginPageEntry,
+} from "./store.ts";
+import {
+    manifestSlotEntries,
+    type PluginError,
+    type PluginManifest,
+    type PluginSdk,
+    type StoredPlugin,
+} from "./types.ts";
 
 const loaded = new Map<string, { graph: PluginGraph; fingerprint: string }>();
 
@@ -50,10 +63,22 @@ const mountStyles = (plugin: StoredPlugin) => {
     }
 };
 
-async function build(plugins: readonly StoredPlugin[]): Promise<{ overrides: PluginOverrides; errors: PluginError[] }> {
+const sdkFor = (manifest: PluginManifest): PluginSdk => ({
+    id: manifest.id,
+    name: manifest.name,
+    version: manifest.version,
+    navigate,
+});
+
+async function build(plugins: readonly StoredPlugin[]): Promise<{
+    overrides: PluginOverrides;
+    pages: PluginPageEntry[];
+    errors: PluginError[];
+}> {
     const enabled = plugins.filter((plugin) => plugin.enabled).sort((a, b) => a.order - b.order);
     const active = new Set(enabled.map((plugin) => plugin.id));
     const overrides: PluginOverrides = {};
+    const pages: PluginPageEntry[] = [];
     const errors: PluginError[] = [];
 
     for (const pluginId of loaded.keys()) {
@@ -66,12 +91,14 @@ async function build(plugins: readonly StoredPlugin[]): Promise<{ overrides: Plu
             const graph = graphFor(plugin);
             mountStyles(plugin);
             const slots = manifestSlotEntries(plugin.manifest);
-            if (!slots.length) continue;
+            const manifestPages = plugin.manifest.pages ?? [];
+            if (!slots.length && !manifestPages.length) continue;
+            const sdk = sdkFor(plugin.manifest);
 
             await initTranspiler();
             for (const [slot, path] of slots) {
                 try {
-                    const component = loadSlotComponent(graph, slot, path, plugin.manifest);
+                    const component = loadSlotComponent(graph, slot, path, sdk);
                     if (WRAPPED_COMPONENTS.has(component)) continue;
                     overrides[slot] = {
                         component,
@@ -82,19 +109,36 @@ async function build(plugins: readonly StoredPlugin[]): Promise<{ overrides: Plu
                     errors.push(failure(plugin, slot, err));
                 }
             }
+            for (const page of manifestPages) {
+                try {
+                    const component = loadPageComponent(graph, page.path, page.component, sdk);
+                    pages.push({
+                        path: page.path,
+                        title: page.title,
+                        icon: page.icon,
+                        sidebar: page.sidebar,
+                        auth: page.auth,
+                        component: component as PluginPageEntry["component"],
+                        pluginId: plugin.id,
+                        pluginName: plugin.manifest.name,
+                    });
+                } catch (err) {
+                    errors.push(failure(plugin, `page:${page.path}`, err));
+                }
+            }
         } catch (err) {
             errors.push(failure(plugin, undefined, err));
         }
     }
 
-    return { overrides, errors };
+    return { overrides, pages, errors };
 }
 
 export default function PluginRuntime({ children }: { children: ReactNode }) {
     const ready = usePluginStore((state) => state.ready);
     const plugins = usePluginStore((state) => state.plugins);
     const load = usePluginStore((state) => state.load);
-    const setOverrides = usePluginStore((state) => state.setOverrides);
+    const setBuildResult = usePluginStore((state) => state.setBuildResult);
 
     useEffect(() => {
         if (!ready) {
@@ -102,13 +146,13 @@ export default function PluginRuntime({ children }: { children: ReactNode }) {
             return;
         }
         let cancelled = false;
-        void build(plugins).then(({ overrides, errors }) => {
-            if (!cancelled) setOverrides(overrides, errors);
+        void build(plugins).then(({ overrides, pages, errors }) => {
+            if (!cancelled) setBuildResult(overrides, pages, errors);
         });
         return () => {
             cancelled = true;
         };
-    }, [ready, plugins, load, setOverrides]);
+    }, [ready, plugins, load, setBuildResult]);
 
     return children;
 }

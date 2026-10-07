@@ -17,6 +17,7 @@ import { fileURLToPath } from "node:url";
 import { zipSync } from "fflate";
 import * as ts from "typescript";
 
+import { PLUGIN_PAGE_ICON_NAMES } from "../src/plugins/page-icons.ts";
 import { PLUGIN_SLOT_MODULES } from "../src/plugins/slot-modules.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -115,7 +116,7 @@ function pluginSchema(): unknown {
         $schema: "http://json-schema.org/draft-07/schema#",
         title: "ChenifyHub UI 插件清单",
         type: "object",
-        required: ["id", "name", "ui"],
+        required: ["id", "name"],
         properties: {
             id: {
                 type: "string",
@@ -141,6 +142,38 @@ function pluginSchema(): unknown {
                         description: "插槽名 → 替换宿主组件的 .tsx 模块路径。ui.style 与 ui.components 至少要有一个。",
                         properties: components,
                         additionalProperties: false,
+                    },
+                },
+            },
+            pages: {
+                type: "array",
+                maxItems: 20,
+                description:
+                    '路由页面数组，注册到 /plugin/<path> 并（可选）出现在 Sidebar 的「插件」分组。' +
+                    '声明 pages 后可以不带 ui/ 目录，但 ui.style、ui.components、pages 至少要有一个。',
+                items: {
+                    type: "object",
+                    additionalProperties: false,
+                    required: ["path", "title", "component"],
+                    properties: {
+                        path: {
+                            type: "string",
+                            pattern: "^[a-z0-9][a-z0-9-]{0,63}(/[a-z0-9][a-z0-9-]{0,63})*$",
+                            description: '页面在 /plugin/ 下的路径，如 "dashboard" 或 "tools/stats"。访问地址即 /plugin/<path>。',
+                        },
+                        title: { type: "string", minLength: 1, description: "Sidebar 条目与页面展示标题。" },
+                        icon: {
+                            type: "string",
+                            enum: [...PLUGIN_PAGE_ICON_NAMES],
+                            description: "Sidebar 条目图标（lucide 图标名，白名单）。省略则回退到 Puzzle。",
+                        },
+                        component: {
+                            type: "string",
+                            default: "pages/dashboard.tsx",
+                            description: "页面组件的 .tsx 模块路径，模块的 default 导出即页面。",
+                        },
+                        sidebar: { type: "boolean", default: true, description: "是否在 Sidebar 的「插件」分组展示。" },
+                        auth: { type: "boolean", default: false, description: "是否要求登录（未登录跳 /login?return_to=…）。" },
                     },
                 },
             },

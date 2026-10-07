@@ -3,16 +3,18 @@
 插件可以整体替换 ChenifyHub 的界面组件 —— 按钮、卡片、输入框、弹窗、菜单等等。
 所有安装、转译、加载都在浏览器本地完成，不需要后端，也不需要构建步骤。
 
-仓库里有两个可运行示例：
+仓库里有三个可运行示例：
 
 - [`samples/plugin-cozy-purple`](../samples/plugin-cozy-purple) —— 4 个插槽，最小上手
 - [`samples/plugin-terminal`](../samples/plugin-terminal) —— **全部 55 个插槽**，黑白单色终端风，
   演示兄弟节点注入、破坏性反色、CRT 特效与逐插槽结构改造
+- [`samples/plugin-hello-page`](../samples/plugin-hello-page) —— 不含 `ui/` 目录，只注册一个
+  路由页面并展示在 Sidebar，是 [§4 路由页面](#4-路由页面与-sidebar) 的最小上手
 
 安装方式就是把这个文件夹整个拖进 `/plugins` 页面。
 
 写 TypeScript 的话顺手把类型模板也下下来（`/plugins` 页面上的按钮），
-每个插槽的 props 都是精确类型，见 [§4 类型支持](#类型支持)。
+每个插槽的 props 都是精确类型，见 [§5 类型支持](#类型支持)。
 
 > **安全提示：插件代码会以任意 JavaScript 的权限在你的浏览器里执行。**
 > 宿主只限制了插件能 `import` 什么，但 `new Function` 跑在页面上下文里，
@@ -33,7 +35,7 @@ cozy-purple/
 - 必须有 `ui/` 目录，否则安装会被拒绝。
 - 上限 200 个文件、单文件 4MB、总体积 16MB。ZIP 里的路径不能跳出包根目录。
 - 目录里别放 `tsconfig.json` 之类开发用的东西 —— 它们会被一起装进 IndexedDB。
-  类型支持见 [§4 类型支持](#类型支持)。
+  类型支持见 [§5 类型支持](#类型支持)。
 
 ## 2. plugin.json
 
@@ -62,13 +64,15 @@ cozy-purple/
 | `author` / `description` | 否 | 仅展示。 |
 | `ui.style` | 否 | 注入 `<head>` 的 CSS 文件数组，卸载时自动移除。 |
 | `ui.components` | 否 | 插槽名 → TSX 模块路径，模块的 `default` 导出就是替换组件。 |
+| `pages` | 否 | 路由页面数组，注册到 `/plugin/<path>`（见 [§4](#4-路由页面与-sidebar)）。 |
 
-`ui.style` 和 `ui.components` 至少要有一个，否则装上去不会有任何效果。
+`ui.style`、`ui.components`、`pages` 至少要有一个，否则装上去不会有任何效果。
+只声明 `pages` 的话可以没有 `ui/` 目录。
 
 路径相对于 `plugin.json` 所在目录，可以用 `./` 前缀，也可以用 `/` 从包根开始写。
 
 想让编辑器补全插槽名、把写错的标红，把类型包里的 `plugin.schema.json` 拷一份到
-插件根目录（见 [§4 类型支持](#类型支持)）：
+插件根目录（见 [§5 类型支持](#类型支持)）：
 
 ```json
 {
@@ -104,7 +108,87 @@ cozy-purple/
 
 也可以在运行时读 `plugin.slots` 拿到这张表。
 
-## 4. 写组件
+## 4. 路由页面与 Sidebar
+
+插件可以声明路由页面：安装后得到 `/plugin/<path>` 地址，可选出现在 Sidebar 的「插件」分组里。
+不需要 `ui/` 目录或组件插槽 —— 一个只含 `pages` 的插件照样能装。
+
+### manifest 写法
+
+```json
+{
+    "id": "hello-page",
+    "name": "Hello Page",
+    "pages": [
+        {
+            "path": "hello",
+            "title": "你好页面",
+            "icon": "Sparkles",
+            "component": "pages/hello.tsx",
+            "sidebar": true,
+            "auth": false
+        }
+    ]
+}
+```
+
+| 字段 | 必填 | 说明 |
+| --- | --- | --- |
+| `path` | 是 | `/plugin/` 下的路径。小写字母、数字、`-` 的分段，如 `dashboard` 或 `tools/stats`（每段最长 64 位），访问地址即 `/plugin/<path>`。 |
+| `title` | 是 | Sidebar 条目与页面展示标题。 |
+| `icon` | 否 | Sidebar 条目图标（lucide 图标名，白名单见 [§4.1](#41-图标白名单)）。省略回退为 `Puzzle`。 |
+| `component` | 是 | 页面组件的 TSX/TS 模块路径，模块的 `default` 导出即页面。 |
+| `sidebar` | 否 | 默认 `true`，是否展示在 Sidebar 的「插件」分组。 |
+| `auth` | 否 | 默认 `false`。`true` 时未登录访问会跳 `/login?return_to=…`，登录后回到原页面。 |
+
+- `pages` 最多 20 条，同一 manifest 内 `path` 不能重复。
+- 「插件」分组挂在侧边栏主分组（首页 / 帖子）下方，只在存在 `sidebar: true` 的页面时出现。
+
+### 4.1 图标白名单
+
+`icon` 只接受下面这些 lucide 图标名，写错会在安装时直接报错并把可用列表打出来：
+
+`LayoutDashboard` `Puzzle` `Home` `BookOpen` `Bookmark` `Bug` `Calendar` `CalendarCheck`
+`Clock` `Code2` `Coins` `Coffee` `Compass` `Cpu` `Database` `DollarSign` `Download` `Eye`
+`FileText` `Flag` `Folder` `Gamepad2` `Gift` `Globe` `GraduationCap` `Heart` `Image` `Key`
+`Landmark` `LifeBuoy` `Lightbulb` `Map` `MapPin` `MessageCircle` `Music` `Palette` `Pin`
+`Rocket` `Rss` `Scissors` `Search` `Settings` `Shield` `Sparkles` `Star` `Store` `Sun` `Tag`
+`Terminal` `ThumbsUp` `Timer` `Trophy` `Upload` `User` `Users` `Wand2` `Wrench` `Zap`
+
+### 写页面组件
+
+页面组件和插槽组件在同一个沙箱里加载，能 import 的模块见 [§5 写组件](#5-写组件) 的模块表，
+额外多一个 `react-router-dom`（拿到的就是宿主的同一份 React Router 实例）：
+
+```tsx
+import { Link } from "react-router-dom";
+
+import { plugin } from "@/plugins/api";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+export default function HelloPage() {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>你好，插件页面</CardTitle>
+                <CardDescription>这个页面注册在 /plugin/hello。</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Button onClick={() => plugin.navigate("/")}>回首页</Button>
+                <Link to="/explore-posts">去帖子</Link>
+            </CardContent>
+        </Card>
+    );
+}
+```
+
+- 组件必须 `default` 导出一个函数组件；页面渲染抛错只降级这一个页面（见 [§10 调试](#10-调试)），不会白屏。
+- 页面能用 `Link`、`useNavigate`、`useParams` 等 `react-router-dom` 的 hook / 组件。
+- 停用或卸载插件后，对应页面立即消失，直接访问会落到 404。
+- `/plugins` 管理页的卡片上会列出每个插件声明的 `/plugin/<path>`。
+
+## 5. 写组件
 
 推荐在宿主默认实现之上叠加，而不是从头重写：
 
@@ -129,7 +213,7 @@ export default function Button(props) {
   （例如 `has-[>[data-slot=button-group]]`）。透传整个 `props` 即可满足，
   自己重新拼 className 时别把它丢掉。
 - 模块必须 `default` 导出一个函数组件；没有 default 导出会在加载时报错
-  （见 §10）。
+  （见 §11）。
 - 宿主只**转译**插件，不做类型检查：`tsc` 的报错不会阻止安装，但会在运行时炸在
   对应插槽上。作者自己可以查 —— 下面这一节就是干这个的。
 
@@ -208,6 +292,7 @@ export default function Button(props: SlotProps<"button">) {
 | 模块 | 内容 |
 | --- | --- |
 | `react`、`react-dom`、`react-dom/client`、`react/jsx-runtime`、`react/jsx-dev-runtime` | 宿主的那一份 React 实例，hooks 才能正常工作 |
+| `react-router-dom` | 路由组件与 hooks（`Link`、`useNavigate`、`useParams` 等）。路由页面会用到，插槽组件也能用 |
 | `lucide-react` | 图标。应用自己用到的那些零成本；用到的其他图标会在首次需要时按需下载（约 127KB gzip，只下一次） |
 | `class-variance-authority` | `cva` |
 | `clsx` | `clsx` |
@@ -238,7 +323,7 @@ Tailwind 工具类里，`src/index.css` 用 `@source inline(...)` 白名单补�
 }
 ```
 
-## 5. 宿主 API
+## 6. 宿主 API
 
 ```tsx
 import { plugin } from "@/plugins/api";
@@ -265,7 +350,7 @@ plugin.storage.set("k", "v");       // 自动加 plugin:<id>: 前缀
 刻意不提供 `fetch`、原始 `localStorage` 和登录 token —— 插件的定位是美化 UI，
 不是读写社区数据。需要持久化就用 `plugin.storage`。
 
-## 6. 多插件与覆盖顺序
+## 7. 多插件与覆盖顺序
 
 插件按管理页里的顺序叠加，同一插槽**后面的插件覆盖前面的**。
 每个组件外面都包了 ErrorBoundary：插件渲染抛错时只降级这一个组件回默认外观，
@@ -279,7 +364,7 @@ plugin.storage.set("k", "v");       // 自动加 plugin:<id>: 前缀
 - 卸载只清这一个插件的文件与样式，不影响其它插件。
 - 停用只是不覆盖，文件仍保留在 IndexedDB 里，随时可以再启用。
 
-## 7. 安装方式
+## 8. 安装方式
 
 `/plugins` 页面（无需登录）支持三种：
 
@@ -304,12 +389,14 @@ plugin.storage.set("k", "v");       // 自动加 plugin:<id>: 前缀
 }
 ```
 
+> 声明了 `pages` 的话，页面组件（比如 `pages/hello.tsx`）也要列进 `files`。
+
 各条目相对 manifest 所在 URL 解析，所以源站需要允许跨域访问。
 
 装完可以随时停用、调整覆盖顺序、卸载。所有数据存在浏览器的 IndexedDB
 （数据库 `chenify-plugins`），不会上传，卸载插件也不会影响其它插件。
 
-## 8. 工作原理
+## 9. 工作原理
 
 1. 读取文件 → 校验体积、`plugin.json`、插槽名、引用是否存在。
 2. 存进 IndexedDB。
@@ -322,7 +409,7 @@ plugin.storage.set("k", "v");       // 自动加 plugin:<id>: 前缀
 没装任何插件的用户不会下载 `sucrase`、Base UI 长尾和图标集：
 `src/index.css` 之外那两块都是懒加载 chunk。
 
-## 9. 调试
+## 10. 调试
 
 - **只炸一个组件，不会白屏。** 每个插槽都套着 ErrorBoundary，渲染抛错时该插槽
   退回宿主默认外观，其余插件照常工作。
@@ -334,14 +421,14 @@ plugin.storage.set("k", "v");       // 自动加 plugin:<id>: 前缀
 - **没有 HMR。** 改完源码要重新装一次同 `id` 的插件才会生效（文件夹或 zip 都行），
   启用状态与顺序会保留。
 - **类型错误不会拦你，但你自己能查。** 宿主只用 sucrase 转译，不做类型检查 ——
-  报错只在运行时出现。装上 [§4 类型支持](#类型支持) 里的类型模板后，`tsc` 会在
+  报错只在运行时出现。装上 [§5 类型支持](#类型支持) 里的类型模板后，`tsc` 会在
   安装之前就把错 props、错插槽名揪出来。类型包是快照，站点组件改过之后要重新下载。
 - **确认插件真的生效了：** `document.documentElement.dataset.plugin` 会是
   `"a b"` 这样的空格分隔 id 列表，也可以用它给自己的 CSS 做前缀选择器。
-- **怀疑死循环 / 递归：** 九成是 §4 里那个 `@/components/ui/*` 的递归陷阱，
+- **怀疑死循环 / 递归：** 九成是 §5 里那个 `@/components/ui/*` 的递归陷阱，
   改用 `useHostUI(slot)`。
 
-## 10. 常见报错
+## 11. 常见报错
 
 ### 安装前校验
 
@@ -353,10 +440,17 @@ plugin.storage.set("k", "v");       // 自动加 plugin:<id>: 前缀
 | `plugin.json 不是合法的 JSON：<err>` | JSON 语法错 | 用编辑器校验 |
 | `plugin.json 的 "id" 只能包含小写字母、数字、. _ -，且以字母或数字开头（最长 64 位）` | id 格式不符 | 例如用 `cozy-purple` |
 | `plugin.json 缺少 "name"` | 缺 `name` | 补上 |
-| `插件包必须包含 ui/ 目录（shadcn/ui + Base UI 格式的 .tsx 源码）` | 没有 `ui/` | 建 `ui/` 目录 |
+| `插件包必须包含 ui/ 目录（shadcn/ui + Base UI 格式的 .tsx 源码）或声明 "pages" 页面` | 既没有 `ui/` 也没有 `pages` | 建 `ui/` 目录或声明页面（见 §4） |
 | `插件包根目录缺少 plugin.json` | manifest 不在包根 | 移到根目录 |
-| `插件包根目录缺少 plugin.json`（仅远程安装） | `files` 数组里漏了 `plugin.json` | 见 §7 |
-| `插件没有声明任何 ui.style 或 ui.components，安装后不会产生任何效果` | 两个都空 | 至少填一个 |
+| `插件包根目录缺少 plugin.json`（仅远程安装） | `files` 数组里漏了 `plugin.json` | 见 §8 |
+| `插件没有声明任何 ui.style、ui.components 或 pages，安装后不会产生任何效果` | 三个都空 | 至少填一个 |
+| `"pages" 必须是数组` / `页面数量超出上限（N > 20）` | `pages` 格式或数量错 | 见 §4 |
+| `"pages[<i>].path" 格式不合法：<path>。…` | 路径含大写、符号或多余的斜杠 | 用小写字母、数字、`-` 分段，如 `dashboard` |
+| `页面路径重复：<path>` | 同一插件声明了两条相同 `path` | 改成唯一 |
+| `"pages[<i>]" 含有未知字段 "<key>"。…` | 页面字段名拼错 | 对照 §4 的字段表 |
+| `"pages[<i>].icon" 不可用：<name>。可用图标：<列表>` | 图标名不在白名单 | 见 §4.1 |
+| `"pages[<i>].component" 引用的文件不存在：<path>` | 页面组件路径写错 | 检查相对路径 |
+| `"pages[<i>].component" 必须指向一个 TSX/TS 源码文件：<path>` | 指到了 css/图片 | 改成 `.tsx` |
 | `未知的组件插槽 "<x>"。可用插槽：<列表>` | 插槽名写错 | 对照 §3 表 |
 | `插槽 "<x>" 引用的文件不存在：<path>` | 路径写错 | 检查相对路径 |
 | `插槽 "<x>" 必须指向一个 TSX/TS 源码文件：<path>` | 指到了 css/图片 | 改成 `.tsx` |
@@ -379,7 +473,7 @@ plugin.storage.set("k", "v");       // 自动加 plugin:<id>: 前缀
 | --- | --- | --- |
 | `请填写 http(s) 开头的 plugin.json 地址` | 协议不对 | 用 https |
 | `地址需要指向 plugin.json` | 填了 zip 或别的路径 | 指向 `plugin.json` |
-| `远程安装要求 plugin.json 中包含 "files" 数组（列出 ui/ 下所有文件）` | 缺 `files` | 见 §7 |
+| `远程安装要求 plugin.json 中包含 "files" 数组（列出 ui/ 下所有文件）` | 缺 `files` | 见 §8 |
 | `"files" 中存在非字符串条目` | 数组里混了对象 | 全部写成字符串 |
 | `拉取 plugin.json 失败：HTTP 404` | 地址错 / 源站没这个文件 | 检查 URL |
 | `拉取 <path> 失败：HTTP <n>` | `files` 里某项拉不到 | 检查该项路径与源站 |
@@ -389,7 +483,7 @@ plugin.storage.set("k", "v");       // 自动加 plugin:<id>: 前缀
 
 | 报错文案 | 原因 | 修法 |
 | --- | --- | --- |
-| `插件不支持导入 "<x>"（来自 <path>）。可用：react、…` | import 了白名单外的模块 | 见 §4 模块表 |
+| `插件不支持导入 "<x>"（来自 <path>）。可用：react、…` | import 了白名单外的模块 | 见 §5 模块表 |
 | `<path> 需要 default 导出一个 React 组件（插槽 "x"）` | 忘了 `export default` | 补 default 导出 |
 | `插件包内找不到 <ref>（来自 <path>）` | 相对路径错 | 检查 import 路径 |
 | `<path> 转译失败：<err>` | TSX 语法错 | 修语法（没类型检查，但语法会拦） |
@@ -397,9 +491,9 @@ plugin.storage.set("k", "v");       // 自动加 plugin:<id>: 前缀
 | `未知的 Base UI 模块：<specifier>` | 用了非根导出的子路径 | 只用公开子路径 |
 
 渲染期异常（不是上面这些）会出现在 `/plugins` 的「运行时错误」区，
-格式是 `插件名 · 插槽 · 时间`，见 §9。
+格式是 `插件名 · 插槽 · 时间`，见 §10。
 
-## 11. 附录：最小可复制插件
+## 12. 附录：最小可复制插件
 
 建一个目录 `my-first/`，放入下面三个文件，然后把整个文件夹拖进 `/plugins` 即可。
 
@@ -434,7 +528,7 @@ export default function Button(props: SlotProps<"button">) {
 }
 ```
 
-`SlotProps<"button">` 那行需要类型模板（[§4 类型支持](#类型支持)）；没有它就把
+`SlotProps<"button">` 那行需要类型模板（[§5 类型支持](#类型支持)）；没有它就把
 参数写成 `(props)`，其余代码一字不用改 —— 宿主只转译，不检查类型。
 
 **`my-first/ui/styles.css`**

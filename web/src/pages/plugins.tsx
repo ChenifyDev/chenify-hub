@@ -320,6 +320,7 @@ function PluginRow({ plugin, index, total, busy, errorCount, onToggle, onMove, o
     const slots = manifestSlotEntries(plugin.manifest)
         .map(([slot]) => slot)
         .sort();
+    const pages = plugin.manifest.pages ?? [];
     return (
         <li>
             <Card size="sm">
@@ -335,7 +336,7 @@ function PluginRow({ plugin, index, total, busy, errorCount, onToggle, onMove, o
                         <p className="mt-1 text-xs text-muted-foreground">
                             {plugin.manifest.author} · 安装于 {formatTime(plugin.installedAt)}
                         </p>
-                        {slots.length > 0 && (
+                        {(slots.length > 0 || pages.length > 0) && (
                             <p className="mt-2 flex flex-wrap gap-1">
                                 {slots.map((slot) => (
                                     <code
@@ -343,6 +344,14 @@ function PluginRow({ plugin, index, total, busy, errorCount, onToggle, onMove, o
                                         className="rounded bg-muted px-1.5 py-0.5 font-mono text-2xs text-muted-foreground"
                                     >
                                         {slot}
+                                    </code>
+                                ))}
+                                {pages.map((page) => (
+                                    <code
+                                        key={page.path}
+                                        className="rounded bg-muted px-1.5 py-0.5 font-mono text-2xs text-muted-foreground"
+                                    >
+                                        /plugin/{page.path}
                                     </code>
                                 ))}
                             </p>

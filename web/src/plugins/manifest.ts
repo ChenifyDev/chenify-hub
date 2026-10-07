@@ -1,7 +1,9 @@
+import { PLUGIN_PAGE_ICON_NAMES, isPageIcon } from "./page-icons.ts";
 import {
     PLUGIN_SLOTS,
     type PluginFile,
     type PluginManifest,
+    type PluginManifestPage,
     type PluginSlot,
     isPluginSlot,
     isScriptPath,
@@ -12,8 +14,10 @@ export const UI_DIR = "ui";
 export const MAX_FILES = 200;
 export const MAX_FILE_BYTES = 4 * 1024 * 1024;
 export const MAX_TOTAL_BYTES = 16 * 1024 * 1024;
+export const MAX_PAGES = 20;
 
 const ID_PATTERN = /^[a-z0-9][a-z0-9._-]{0,63}$/;
+const PAGE_PATH_PATTERN = /^[a-z0-9][a-z0-9-]{0,63}(\/[a-z0-9][a-z0-9-]{0,63})*$/;
 
 export class PluginValidationError extends Error {
     constructor(message: string) {
@@ -74,6 +78,12 @@ function asRecord(value: unknown, label: string): Record<string, unknown> {
     return value as Record<string, unknown>;
 }
 
+function readBoolean(value: unknown, label: string, fallback: boolean): boolean {
+    if (value === undefined || value === null) return fallback;
+    if (typeof value !== "boolean") throw new PluginValidationError(`plugin.json 的 "${label}" 必须是布尔值`);
+    return value;
+}
+
 export function checkPackageLimits(files: readonly PluginFile[]): void {
     if (files.length > MAX_FILES) {
         throw new PluginValidationError(`文件数量超出上限（${files.length} > ${MAX_FILES}）`);
@@ -86,6 +96,80 @@ export function checkPackageLimits(files: readonly PluginFile[]): void {
     }, 0);
     if (total > MAX_TOTAL_BYTES)
         throw new PluginValidationError(`插件包总体积超过 ${Math.round(MAX_TOTAL_BYTES / 1024 / 1024)}MB`);
+}
+
+const PAGE_ENTRY_KEYS = new Set(["path", "title", "icon", "component", "sidebar", "auth"]);
+
+function parsePages(source: Record<string, unknown>, files: Map<string, PluginFile>): PluginManifestPage[] {
+    const raw = source.pages;
+    if (raw === undefined || raw === null) return [];
+    if (!Array.isArray(raw)) throw new PluginValidationError('plugin.json 的 "pages" 必须是数组');
+    if (raw.length > MAX_PAGES) {
+        throw new PluginValidationError(`页面数量超出上限（${raw.length} > ${MAX_PAGES}）`);
+    }
+
+    const seen = new Set<string>();
+    return raw.map((entry, index) => {
+        const page = asRecord(entry, `pages[${index}]`);
+        for (const key of Object.keys(page)) {
+            if (!PAGE_ENTRY_KEYS.has(key)) {
+                throw new PluginValidationError(`"pages[${index}]" 含有未知字段 "${key}"。可用字段：${[...PAGE_ENTRY_KEYS].join(", ")}`);
+            }
+        }
+
+        const label = `pages[${index}]`;
+        const pathRaw = page.path;
+        if (typeof pathRaw !== "string" || !pathRaw.trim()) {
+            throw new PluginValidationError(`"${label}.path" 缺少或为空`);
+        }
+        const path = pathRaw.trim();
+        if (!PAGE_PATH_PATTERN.test(path)) {
+            throw new PluginValidationError(
+                `"${label}.path" 格式不合法：${path || "(空)"}。只允许小写字母、数字与 - 的分段路径，` +
+                    `如 "dashboard" 或 "tools/stats"（每段最长 64 位）`,
+            );
+        }
+        if (seen.has(path)) throw new PluginValidationError(`页面路径重复：${path}`);
+        seen.add(path);
+
+        const titleRaw = page.title;
+        if (typeof titleRaw !== "string" || !titleRaw.trim()) {
+            throw new PluginValidationError(`"${label}.title" 缺少或为空`);
+        }
+        const title = titleRaw.trim();
+
+        const iconRaw = page.icon;
+        let icon: string | null = null;
+        if (iconRaw !== undefined && iconRaw !== null) {
+            if (typeof iconRaw !== "string") throw new PluginValidationError(`"${label}.icon" 必须是字符串`);
+            if (!isPageIcon(iconRaw)) {
+                throw new PluginValidationError(
+                    `"${label}.icon" 不可用：${iconRaw}。可用图标：${PLUGIN_PAGE_ICON_NAMES.join(", ")}`,
+                );
+            }
+            icon = iconRaw;
+        }
+
+        const componentRef = page.component;
+        if (typeof componentRef !== "string" || !componentRef.trim()) {
+            throw new PluginValidationError(`"${label}.component" 缺少`);
+        }
+        const component = resolveRef(MANIFEST_NAME, componentRef.trim());
+        const file = files.get(component);
+        if (!file) throw new PluginValidationError(`"${label}.component" 引用的文件不存在：${component}`);
+        if (file.kind !== "text" || !isScriptPath(component)) {
+            throw new PluginValidationError(`"${label}.component" 必须指向一个 TSX/TS 源码文件：${component}`);
+        }
+
+        return {
+            path,
+            title,
+            icon,
+            component,
+            sidebar: readBoolean(page.sidebar, `${label}.sidebar`, true),
+            auth: readBoolean(page.auth, `${label}.auth`, false),
+        };
+    });
 }
 
 export function parseManifest(raw: unknown, files: Map<string, PluginFile>): PluginManifest {
@@ -107,11 +191,8 @@ export function parseManifest(raw: unknown, files: Map<string, PluginFile>): Plu
     }
     const name = readString(source, "name").trim();
     if (!name) throw new PluginValidationError('plugin.json 缺少 "name"');
-    if (![...files.keys()].some((path) => path === UI_DIR || path.startsWith(`${UI_DIR}/`))) {
-        throw new PluginValidationError(`插件包必须包含 ${UI_DIR}/ 目录（shadcn/ui + Base UI 格式的 .tsx 源码）`);
-    }
 
-    const ui = asRecord(source.ui, "ui");
+    const ui = source.ui === undefined || source.ui === null ? {} : asRecord(source.ui, "ui");
     if (!Array.isArray(ui.style ?? [])) throw new PluginValidationError('plugin.json 的 "ui.style" 必须是数组');
     const style = ((ui.style ?? []) as unknown[]).map((entry, index) => {
         if (typeof entry !== "string") throw new PluginValidationError(`"ui.style[${index}]" 必须是字符串`);
@@ -137,8 +218,14 @@ export function parseManifest(raw: unknown, files: Map<string, PluginFile>): Plu
         components[slot] = path;
     }
 
-    if (!style.length && !Object.keys(components).length) {
-        throw new PluginValidationError("插件没有声明任何 ui.style 或 ui.components，安装后不会产生任何效果");
+    const pages = parsePages(source, files);
+
+    if (!pages.length && ![...files.keys()].some((path) => path === UI_DIR || path.startsWith(`${UI_DIR}/`))) {
+        throw new PluginValidationError(`插件包必须包含 ${UI_DIR}/ 目录（shadcn/ui + Base UI 格式的 .tsx 源码）或声明 "pages" 页面`);
+    }
+
+    if (!style.length && !Object.keys(components).length && !pages.length) {
+        throw new PluginValidationError("插件没有声明任何 ui.style、ui.components 或 pages，安装后不会产生任何效果");
     }
 
     for (const file of files.values()) {
@@ -154,5 +241,6 @@ export function parseManifest(raw: unknown, files: Map<string, PluginFile>): Plu
         author: readString(source, "author").trim(),
         description: readString(source, "description").trim(),
         ui: { style, components },
+        pages,
     };
 }

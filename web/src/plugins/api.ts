@@ -15,13 +15,13 @@ export function useHostUI<S extends PluginSlot>(slot: S): PluginSlotComponentOf<
     return hostDefaults.get(slot) as PluginSlotComponentOf<S> | undefined;
 }
 
-type BoundaryProps = {
+export type BoundaryProps = {
     error: Omit<PluginError, "message" | "at">;
     fallback: ReactNode;
     children?: ReactNode;
 };
 
-class SlotErrorBoundary extends Component<BoundaryProps, { failed: boolean }> {
+export class SlotErrorBoundary extends Component<BoundaryProps, { failed: boolean }> {
     state = { failed: false };
 
     static getDerivedStateFromError() {

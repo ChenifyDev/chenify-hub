@@ -26,6 +26,15 @@ export type PluginManifestUi = {
     components: Partial<Record<PluginSlot, string>>;
 };
 
+export type PluginManifestPage = {
+    path: string;
+    title: string;
+    icon: string | null;
+    component: string;
+    sidebar: boolean;
+    auth: boolean;
+};
+
 export type PluginManifest = {
     id: string;
     name: string;
@@ -33,6 +42,7 @@ export type PluginManifest = {
     author: string;
     description: string;
     ui: PluginManifestUi;
+    pages: PluginManifestPage[];
 };
 
 export type PluginFile =
@@ -62,6 +72,7 @@ export type PluginSdk = {
     readonly id: string;
     readonly name: string;
     readonly version: string;
+    readonly navigate: (to: string) => void;
 };
 
 export { PLUGIN_SLOT_MODULES } from "./slot-modules.ts";

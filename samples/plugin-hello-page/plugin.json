@@ -1,0 +1,17 @@
+{
+    "id": "hello-page",
+    "name": "Hello Page",
+    "version": "1.0.0",
+    "author": "ChenifyHub",
+    "description": "演示插件路由页面与 Sidebar 注册的最小示例（没有 ui/ 目录）。",
+    "pages": [
+        {
+            "path": "hello",
+            "title": "你好页面",
+            "icon": "Sparkles",
+            "component": "pages/hello.tsx",
+            "sidebar": true,
+            "auth": false
+        }
+    ]
+}

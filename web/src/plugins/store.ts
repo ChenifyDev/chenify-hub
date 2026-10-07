@@ -12,14 +12,26 @@ export type PluginOverrideEntry = {
 
 export type PluginOverrides = Partial<Record<PluginSlot, PluginOverrideEntry>>;
 
+export type PluginPageEntry = {
+    path: string;
+    title: string;
+    icon: string | null;
+    sidebar: boolean;
+    auth: boolean;
+    component: ComponentType<never>;
+    pluginId: string;
+    pluginName: string;
+};
+
 type PluginState = {
     ready: boolean;
     loadError: string | null;
     plugins: StoredPlugin[];
     overrides: PluginOverrides;
+    pages: PluginPageEntry[];
     revision: number;
     errors: PluginError[];
-    setOverrides: (overrides: PluginOverrides, errors: PluginError[]) => void;
+    setBuildResult: (overrides: PluginOverrides, pages: PluginPageEntry[], errors: PluginError[]) => void;
     addError: (error: PluginError) => void;
     clearErrors: (pluginId?: string) => void;
     load: () => Promise<void>;
@@ -40,10 +52,12 @@ export const usePluginStore = create<PluginState>((set, get) => {
         loadError: null,
         plugins: [],
         overrides: {},
+        pages: [],
         revision: 0,
         errors: [],
 
-        setOverrides: (overrides, errors) => set((state) => ({ overrides, revision: state.revision + 1, errors })),
+        setBuildResult: (overrides, pages, errors) =>
+            set((state) => ({ overrides, pages, revision: state.revision + 1, errors })),
         addError: (error) => set((state) => ({ errors: [...state.errors, error].slice(-20) })),
         clearErrors: (pluginId) =>
             set((state) => ({ errors: pluginId ? state.errors.filter((error) => error.pluginId !== pluginId) : [] })),

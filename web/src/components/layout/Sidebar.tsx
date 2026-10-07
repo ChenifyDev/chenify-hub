@@ -28,6 +28,7 @@ import {
     SidebarFooter,
     SidebarGroup,
     SidebarGroupContent,
+    SidebarGroupLabel,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
@@ -36,6 +37,8 @@ import {
     SidebarTrigger,
     useSidebar,
 } from "@/components/ui/sidebar.tsx";
+import { PLUGIN_PAGE_ICONS } from "@/plugins/page-icons.ts";
+import { usePluginStore } from "@/plugins/store.ts";
 import { cn } from "@/lib/utils.ts";
 import { clearAllDrafts } from "@/hooks/useDraftPersistence.ts";
 import { useLoginLink } from "@/hooks/useLoginLink.ts";
@@ -62,6 +65,7 @@ export default function AppSidebar() {
     const [keyword, setKeyword] = useState("");
     const { state, toggleSidebar } = useSidebar();
     const isCollapsed = state === "collapsed";
+    const pluginPages = usePluginStore((s) => s.pages).filter((page) => page.sidebar);
 
     useEffect(() => {
         if (!user) return;
@@ -152,6 +156,30 @@ export default function AppSidebar() {
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
+                {pluginPages.length > 0 && (
+                    <SidebarGroup>
+                        <SidebarGroupLabel>插件</SidebarGroupLabel>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                {pluginPages.map((page) => {
+                                    const Icon = (page.icon ? PLUGIN_PAGE_ICONS[page.icon] : undefined) ?? Puzzle;
+                                    return (
+                                        <SidebarMenuItem key={`${page.pluginId}:${page.path}`}>
+                                            <NavLink to={`/plugin/${page.path}`}>
+                                                {({ isActive }) => (
+                                                    <SidebarMenuButton isActive={isActive} tooltip={page.title}>
+                                                        <Icon />
+                                                        <span>{page.title}</span>
+                                                    </SidebarMenuButton>
+                                                )}
+                                            </NavLink>
+                                        </SidebarMenuItem>
+                                    );
+                                })}
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+                )}
             </SidebarContent>
 
             <SidebarFooter>

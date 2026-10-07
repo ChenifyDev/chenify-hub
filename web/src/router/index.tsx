@@ -16,6 +16,7 @@ import NotificationsPage from "@/pages/notifications.tsx";
 import RankPage from "@/pages/rank.tsx";
 import CheckinPage from "@/pages/checkin.tsx";
 import PluginsPage from "@/pages/plugins.tsx";
+import PluginPagesRoute from "@/plugins/pages.tsx";
 const router = createBrowserRouter([
     {
         path: "/",
@@ -96,6 +97,10 @@ const router = createBrowserRouter([
             {
                 path: "plugins",
                 element: <PluginsPage />,
+            },
+            {
+                path: "plugin/*",
+                element: <PluginPagesRoute />,
             },
         ],
     },
