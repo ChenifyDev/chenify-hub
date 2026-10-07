@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, Loader2, Save, Send } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import EditorField from "@/components/forum/MarkdownEditor.tsx";
+import EditorArea from "@/components/forum/write/EditorArea.tsx";
 import { ImagePicker } from "@/components/forum/write/ImagePicker.tsx";
 import { Page } from "@/components/layout/Page.tsx";
 import { TagInput } from "@/components/forum/write/TagInput.tsx";
@@ -218,7 +218,7 @@ export default function Write() {
                         允许评论
                     </label>
 
-                    <EditorField value={content} onChange={handleContentChange} />
+                    <EditorArea value={content} onChange={handleContentChange} />
 
                     <div className="grid gap-3 border-t pt-4">
                         <TagInput value={tagInput} onChange={handleTagInputChange} tags={tags} />
