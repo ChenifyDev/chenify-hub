@@ -1,12 +1,12 @@
 {
     "name": "chenify-hub",
     "private": true,
-    "type": "module",
     "workspaces": [
         "server"
     ],
+    "type": "module",
     "scripts": {
-        "dev": "vite web & bun --watch server/index.ts & wait",
+        "dev": "concurrently \"bun run dev:web\" \"bun run dev:server\"",
         "dev:web": "vite web",
         "dev:server": "bun --watch server/index.ts",
         "start": "bun server/index.ts",
@@ -83,6 +83,7 @@
         "@types/react": "^19.2.17",
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^6.0.4",
+        "concurrently": "^10.0.5",
         "drizzle-kit": "^0.31.10",
         "typescript": "~6.0.2",
         "vite": "^8.2.0"
