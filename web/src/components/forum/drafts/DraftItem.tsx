@@ -1,10 +1,15 @@
+import { useMemo, useState } from "react";
 import type { Draft } from "@/lib/api";
 import { parseFrontmatter } from "@/lib/frontmatter";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { cn } from "@/lib/utils";
 import { formatDateTime } from "@/lib/format";
 import { Button } from "@/components/ui/button.tsx";
-import { EyeOff, Loader2, Pencil, Send, Trash2 } from "lucide-react";
+import Markdown from "@/components/forum/Markdown.tsx";
+import { truncateMarkdown } from "@/lib/markdown";
+import { ChevronDown, ChevronUp, EyeOff, Loader2, Pencil, Send, Trash2 } from "lucide-react";
+
+const PREVIEW_MAX_LENGTH = 100;
 
 export function DraftItem({
     draft,
@@ -21,8 +26,10 @@ export function DraftItem({
     onUnpublish: (draft: Draft) => void;
     onDelete: (draft: Draft) => void;
 }) {
+    const [expanded, setExpanded] = useState(false);
     const published = draft.status === "published";
     const { title, body } = parseFrontmatter(draft.content);
+    const { excerpt, isTruncated } = useMemo(() => truncateMarkdown(body, PREVIEW_MAX_LENGTH), [body]);
     return (
         <Card size="sm">
             <CardContent className="grid gap-3">
@@ -39,9 +46,22 @@ export function DraftItem({
                 </div>
 
                 {title && <p className="text-sm font-semibold">{title}</p>}
-                <p className="whitespace-pre-wrap text-sm">
-                    {body || <span className="text-muted-foreground">（无内容）</span>}
-                </p>
+                {body ? (
+                    <Markdown content={expanded ? body : excerpt} />
+                ) : (
+                    <p className="text-sm text-muted-foreground">（无内容）</p>
+                )}
+                {isTruncated && (
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        className="w-full text-xs"
+                        onClick={() => setExpanded((prev) => !prev)}
+                    >
+                        {expanded ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
+                        {expanded ? "收起" : "展开"}
+                    </Button>
+                )}
 
                 {draft.images.length > 0 && (
                     <div className="flex flex-wrap gap-2">
