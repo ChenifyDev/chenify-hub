@@ -364,7 +364,7 @@ function PluginRow({ plugin, index, total, busy, errorCount, onToggle, onMove, o
                             size="icon-sm"
                             disabled={busy || index === 0}
                             title="上移，覆盖优先级更高"
-                            onClick={() => onMove(1)}
+                            onClick={() => onMove(-1)}
                         >
                             <ArrowUp />
                         </Button>
@@ -373,7 +373,7 @@ function PluginRow({ plugin, index, total, busy, errorCount, onToggle, onMove, o
                             size="icon-sm"
                             disabled={busy || index === total - 1}
                             title="下移，覆盖优先级更低"
-                            onClick={() => onMove(-1)}
+                            onClick={() => onMove(1)}
                         >
                             <ArrowDown />
                         </Button>

@@ -100,6 +100,7 @@ async function build(plugins: readonly StoredPlugin[]): Promise<{
                 try {
                     const component = loadSlotComponent(graph, slot, path, sdk);
                     if (WRAPPED_COMPONENTS.has(component)) continue;
+                    if (slot in overrides) continue;
                     overrides[slot] = {
                         component,
                         pluginId: plugin.id,
