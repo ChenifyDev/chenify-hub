@@ -11,12 +11,7 @@ import {
     type PluginGraph,
 } from "./resolver.ts";
 import { dropPluginStyles, setPluginScope, setPluginStyle } from "./styles.ts";
-import {
-    usePluginStore,
-    type PluginOverrideEntry,
-    type PluginOverrides,
-    type PluginPageEntry,
-} from "./store.ts";
+import { usePluginStore, type PluginOverrideEntry, type PluginOverrides, type PluginPageEntry } from "./store.ts";
 import {
     manifestSlotEntries,
     type PluginError,

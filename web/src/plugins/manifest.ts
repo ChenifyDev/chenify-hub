@@ -113,7 +113,9 @@ function parsePages(source: Record<string, unknown>, files: Map<string, PluginFi
         const page = asRecord(entry, `pages[${index}]`);
         for (const key of Object.keys(page)) {
             if (!PAGE_ENTRY_KEYS.has(key)) {
-                throw new PluginValidationError(`"pages[${index}]" 含有未知字段 "${key}"。可用字段：${[...PAGE_ENTRY_KEYS].join(", ")}`);
+                throw new PluginValidationError(
+                    `"pages[${index}]" 含有未知字段 "${key}"。可用字段：${[...PAGE_ENTRY_KEYS].join(", ")}`,
+                );
             }
         }
 
@@ -221,7 +223,9 @@ export function parseManifest(raw: unknown, files: Map<string, PluginFile>): Plu
     const pages = parsePages(source, files);
 
     if (!pages.length && ![...files.keys()].some((path) => path === UI_DIR || path.startsWith(`${UI_DIR}/`))) {
-        throw new PluginValidationError(`插件包必须包含 ${UI_DIR}/ 目录（shadcn/ui + Base UI 格式的 .tsx 源码）或声明 "pages" 页面`);
+        throw new PluginValidationError(
+            `插件包必须包含 ${UI_DIR}/ 目录（shadcn/ui + Base UI 格式的 .tsx 源码）或声明 "pages" 页面`,
+        );
     }
 
     if (!style.length && !Object.keys(components).length && !pages.length) {

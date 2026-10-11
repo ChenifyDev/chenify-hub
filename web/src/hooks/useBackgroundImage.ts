@@ -57,9 +57,7 @@ async function compressToWebp(file: File): Promise<Blob> {
 
 export function useBackgroundImage({ onError }: { onError?: (message: string) => void } = {}) {
     const [url, setUrl] = useState<string | null>(() => localStorage.getItem(STORAGE_KEY));
-    const [blur, setBlurState] = useState<boolean>(
-        () => localStorage.getItem(BLUR_STORAGE_KEY) !== "off",
-    );
+    const [blur, setBlurState] = useState<boolean>(() => localStorage.getItem(BLUR_STORAGE_KEY) !== "off");
 
     useEffect(() => {
         if (url) {

@@ -8,7 +8,5 @@ const SITE_PATH = /^\/(?!\/)/;
 
 export function navigate(to: string): void {
     if (typeof to !== "string" || !SITE_PATH.test(to)) return;
-    void import("../router/index.tsx")
-        .then((module) => module.default.navigate(to))
-        .catch(() => {});
+    void import("../router/index.tsx").then((module) => module.default.navigate(to)).catch(() => {});
 }
