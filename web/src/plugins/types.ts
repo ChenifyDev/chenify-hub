@@ -18,6 +18,7 @@ import type { Label } from "@/components/ui/label";
 import type { Separator } from "@/components/ui/separator";
 import type { Skeleton } from "@/components/ui/skeleton";
 import type { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 export type PluginInstallSource = "folder" | "zip" | "url";
 
@@ -116,6 +117,8 @@ export interface PluginSlotComponents {
     tabsList: typeof TabsList;
     tabsTrigger: typeof TabsTrigger;
     tabsContent: typeof TabsContent;
+    scrollArea: typeof ScrollArea;
+    scrollBar: typeof ScrollBar;
 }
 
 export type PluginSlotComponentOf<S extends PluginSlot> = PluginSlotComponents[S];

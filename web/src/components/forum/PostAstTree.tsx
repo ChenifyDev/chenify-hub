@@ -7,6 +7,7 @@ import type { DocHeading } from "@/lib/tiptap-extensions.ts";
 import { parseDocument } from "@/lib/tiptap-extensions.ts";
 import { parseFrontmatter } from "@/lib/frontmatter.ts";
 import { cn } from "@/lib/utils.ts";
+import { ScrollArea } from "@/components/ui/scroll-area.tsx";
 
 function TocList({ nodes }: { nodes: DocHeading[] }) {
     const [activeId, setActiveId] = useState<string | null>(null);
@@ -76,15 +77,17 @@ export function PostAstTree({ content }: { content: string }) {
             </Button>
             <Sheet open={open} onOpenChange={setOpen}>
                 <SheetContent side="right">
-                    <SheetHeader>
-                        <SheetTitle className="flex items-center gap-2">
-                            <ListTree className="size-4" />
-                            目录
-                        </SheetTitle>
-                    </SheetHeader>
-                    <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
-                        <TocList nodes={nodes} />
-                    </div>
+                    <ScrollArea className={"max-h-screen"}>
+                        <SheetHeader>
+                            <SheetTitle className="flex items-center gap-2">
+                                <ListTree className="size-4" />
+                                目录
+                            </SheetTitle>
+                        </SheetHeader>
+                        <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
+                            <TocList nodes={nodes} />
+                        </div>
+                    </ScrollArea>
                 </SheetContent>
             </Sheet>
         </>

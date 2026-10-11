@@ -8,4 +8,5 @@ export const PLUGIN_SLOT_MODULES = {
     "skeleton.tsx": ["Skeleton"],
     "checkbox.tsx": ["Checkbox"],
     "tabs.tsx": ["Tabs", "TabsList", "TabsTrigger", "TabsContent"],
+    "scroll-area.tsx": ["ScrollArea", "ScrollBar"],
 } as const;

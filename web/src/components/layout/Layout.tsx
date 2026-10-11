@@ -3,6 +3,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar.tsx";
 import AppSidebar from "@/components/layout/Sidebar.tsx";
 import { TooltipProvider } from "../ui/tooltip";
 import { useBackgroundImage } from "@/hooks/useBackgroundImage";
+import { ScrollArea } from "@/components/ui/scroll-area.tsx";
 
 export default function Layout() {
     useBackgroundImage();
@@ -15,7 +16,9 @@ export default function Layout() {
                     <div className="p-2 md:hidden">
                         <SidebarTrigger />
                     </div>
-                    <Outlet />
+                    <ScrollArea className={"max-h-screen"}>
+                        <Outlet />
+                    </ScrollArea>
                 </main>
             </SidebarProvider>
         </TooltipProvider>
